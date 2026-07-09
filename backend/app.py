@@ -56,6 +56,12 @@ with app.app_context():
    else:
        print('Admin already exists')
 
+# Import controllers & register blueprints
+from controllers.system import system_bp
+from controllers.auth import auth_bp
+app.register_blueprint(system_bp)
+app.register_blueprint(auth_bp)
+
 #Run App
 
 if __name__ == "__main__":

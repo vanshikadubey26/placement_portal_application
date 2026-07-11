@@ -18,48 +18,56 @@ def login():
     # 1. Check if user exists in the User table 
     user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
     if user:
-        if bcrypt.check_password_hash(user.password, password):
-            if user.isBlacklisted:
-                return jsonify({"message": "Your account has been blacklisted."}), 403
-            
-            access_token = create_access_token(
-                identity=str(user.id),
-                additional_claims={"role": user.type}
-            )
-            return jsonify({
-                "access_token": access_token,
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "name": user.name,
-                    "role": user.type
-                }
-            }), 200
+        if user.isBlacklisted:
+            return jsonify({"message": "Your account has been blacklisted."}), 403
+        
+        if not bcrypt.check_password_hash(user.password, password):
+            return jsonify({"message": "Invalid username/email or password."}), 401
+        
+        if user.type not in ['student', 'admin']:
+            return jsonify({"message": "Unauthorized role."}), 403
+        
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={"role": user.type}
+        )
+        return jsonify({
+            "access_token": access_token,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "name": user.name,
+                "role": user.type
+            }
+        }), 200
 
     # 2. Check if user exists in the Company table (recruiter)
     company = Company.query.filter((Company.username == identifier) | (Company.email == identifier)).first()
     if company:
-        if bcrypt.check_password_hash(company.password, password):
-            if company.isBlacklisted:
-                return jsonify({"message": "Your company account has been blacklisted."}), 403
-            if not company.approved:
-                return jsonify({"message": "Your company account is pending approval by the admin."}), 403
-            
-            access_token = create_access_token(
-                identity=f"company_{company.id}",
-                additional_claims={"role": "recruiter"}
-            )
-            return jsonify({
-                "access_token": access_token,
-                "user": {
-                    "id": company.id,
-                    "username": company.username,
-                    "email": company.email,
-                    "name": company.name,
-                    "role": "recruiter"
-                }
-            }), 200
+        if company.isBlacklisted:
+            return jsonify({"message": "Your company account has been blacklisted."}), 403
+        
+        if not bcrypt.check_password_hash(company.password, password):
+            return jsonify({"message": "Invalid username/email or password."}), 401
+        
+        if not company.approved:
+            return jsonify({"message": "Your company account is pending approval by the admin."}), 403
+        
+        access_token = create_access_token(
+            identity=f"company_{company.id}",
+            additional_claims={"role": "recruiter"}
+        )
+        return jsonify({
+            "access_token": access_token,
+            "user": {
+                "id": company.id,
+                "username": company.username,
+                "email": company.email,
+                "name": company.name,
+                "role": "recruiter"
+            }
+        }), 200
 
     return jsonify({"message": "Invalid username/email or password."}), 401
 
@@ -113,3 +121,55 @@ def signup_student():
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "An error occurred during signup.", "error": str(e)}), 500
+
+
+@auth_bp.route('/api/auth/signup/company', methods=['POST'])
+def signup_company():
+    from app import bcrypt
+    
+    data = request.get_json() or {}
+    
+    # Required fields
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    name = data.get('name')
+
+    # Validate presence
+    if not all([username, email, password, name]):
+        return jsonify({"message": "All fields (username, email, password, name) are required."}), 400
+
+    # Check uniqueness
+    if User.query.filter((User.username == username) | (User.email == email)).first():
+        return jsonify({"message": "Username or email already exists."}), 400
+
+    if Company.query.filter((Company.username == username) | (Company.email == email)).first():
+        return jsonify({"message": "Username or email already exists."}), 400
+
+    try:
+        # Create Company
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_company = Company(
+            username=username,
+            email=email,
+            password=hashed_password,
+            name=name,
+            approved=False
+        )
+        db.session.add(new_company)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Company registered successfully. Pending admin approval.",
+            "company": {
+                "id": new_company.id,
+                "username": new_company.username,
+                "email": new_company.email,
+                "name": new_company.name,
+                "approved": new_company.approved
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "An error occurred during company registration.", "error": str(e)}), 500
+

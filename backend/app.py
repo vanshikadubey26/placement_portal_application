@@ -12,11 +12,18 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 #CORS
-CORS(app,
-    origins=["http://localhost:5173"],
+CORS(
+    app,
+    origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ],
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"],
-    methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"])
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+)
 
 #Extensions
 bcrypt = Bcrypt(app)
@@ -54,13 +61,23 @@ with app.app_context():
        db.session.commit()
        print('Admin created successfully')
    else:
-       print('Admin already exists')
+       # Always sync the admin password to the configured value
+       if not bcrypt.check_password_hash(admin_user.password, app.config['ADMIN_PASSWORD']):
+           admin_user.password = bcrypt.generate_password_hash(
+               app.config['ADMIN_PASSWORD']
+           ).decode('utf-8')
+           db.session.commit()
+           print('Admin password synced to config')
+       else:
+           print('Admin already exists')
 
 # Import controllers & register blueprints
-from controllers.system import system_bp
-from controllers.auth import auth_bp
+from application.controllers.system import system_bp
+from application.controllers.auth import auth_bp
+from application.controllers.admin import admin_bp
 app.register_blueprint(system_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
 
 #Run App
 

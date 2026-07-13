@@ -13,7 +13,6 @@ class User(db.Model, UserMixin):
    type = db.Column(db.String(50), default='user', nullable=False)
    isBlacklisted = db.Column(db.Boolean, default=False)
    created_at = db.Column(db.DateTime, default=ist_now)
-   logo = db.Column(db.String(150), nullable=True)
    student = db.relationship('Student', backref='user', lazy=True, uselist=False)
 
 

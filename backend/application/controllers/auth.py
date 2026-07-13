@@ -15,14 +15,14 @@ def login():
     if not identifier or not password:
         return jsonify({"message": "Username/email and password are required."}), 400
 
-    # 1. Check if user exists in the User table 
+    # Check User table first
     user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
     if user:
         if user.isBlacklisted:
-            return jsonify({"message": "Your account has been blacklisted."}), 403
+            return jsonify({"message": "Your account has been blacklisted. Please contact the admin."}), 403
         
         if not bcrypt.check_password_hash(user.password, password):
-            return jsonify({"message": "Invalid username/email or password."}), 401
+            return jsonify({"message": "Incorrect password. Please try again."}), 401
         
         if user.type not in ['student', 'admin']:
             return jsonify({"message": "Unauthorized role."}), 403
@@ -42,14 +42,14 @@ def login():
             }
         }), 200
 
-    # 2. Check if user exists in the Company table (recruiter)
+    # Check Company table
     company = Company.query.filter((Company.username == identifier) | (Company.email == identifier)).first()
     if company:
         if company.isBlacklisted:
-            return jsonify({"message": "Your company account has been blacklisted."}), 403
+            return jsonify({"message": "Your company account has been blacklisted. Please contact the admin."}), 403
         
         if not bcrypt.check_password_hash(company.password, password):
-            return jsonify({"message": "Invalid username/email or password."}), 401
+            return jsonify({"message": "Incorrect password. Please try again."}), 401
         
         if not company.approved:
             return jsonify({"message": "Your company account is pending approval by the admin."}), 403
@@ -69,7 +69,8 @@ def login():
             }
         }), 200
 
-    return jsonify({"message": "Invalid username/email or password."}), 401
+    # No matching user or company found
+    return jsonify({"message": "No account found with that username or email."}), 401
 
 
 @auth_bp.route('/api/auth/signup/student', methods=['POST'])
@@ -78,17 +79,15 @@ def signup_student():
     
     data = request.get_json() or {}
     
-    # Required fields
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
 
-    # Validate presence
     if not all([username, email, password, name]):
         return jsonify({"message": "All fields (username, email, password, name) are required."}), 400
 
-    # Check uniqueness
+
     if User.query.filter((User.username == username) | (User.email == email)).first():
         return jsonify({"message": "Username or email already exists."}), 400
 
@@ -96,7 +95,6 @@ def signup_student():
         return jsonify({"message": "Username or email already exists."}), 400
 
     try:
-        # Create User
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         new_user = User(
             username=username,
@@ -129,17 +127,14 @@ def signup_company():
     
     data = request.get_json() or {}
     
-    # Required fields
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
 
-    # Validate presence
     if not all([username, email, password, name]):
         return jsonify({"message": "All fields (username, email, password, name) are required."}), 400
 
-    # Check uniqueness
     if User.query.filter((User.username == username) | (User.email == email)).first():
         return jsonify({"message": "Username or email already exists."}), 400
 
@@ -147,7 +142,7 @@ def signup_company():
         return jsonify({"message": "Username or email already exists."}), 400
 
     try:
-        # Create Company
+       
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         new_company = Company(
             username=username,
@@ -172,4 +167,9 @@ def signup_company():
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": "An error occurred during company registration.", "error": str(e)}), 500
+
+
+@auth_bp.route('/api/auth/logout', methods=['POST'])
+def logout():
+    return jsonify({"message": "Logout successful."}), 200
 

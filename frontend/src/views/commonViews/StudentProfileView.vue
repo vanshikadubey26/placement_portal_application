@@ -48,8 +48,8 @@
 
           <!-- Action Buttons -->
           <div class="header-actions">
-            <button @click="shareProfileLink" class="btn-share" title="Share Profile Link">
-              <i class="bi bi-share"></i>
+            <button @click="goBack" class="btn-back" title="Go Back">
+              <i class="bi bi-arrow-left"></i> Back
             </button>
           </div>
         </div>
@@ -337,85 +337,75 @@ onMounted(async () => {
   }, 150)
 
   const routeUserId = route.params.userid
-  const loggedInStudentId = currentUser.value?.id
 
-  // If we are looking at another student profile (e.g. dynamic userid param doesn't match login)
-  if (routeUserId && String(routeUserId) !== String(loggedInStudentId)) {
+  if (routeUserId) {
     try {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('http://localhost:5555/admin/all-students', {
+      const res = await fetch(`http://localhost:5555/common/student/profile/${routeUserId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
-        const allStudents = await res.json()
-        const matchedStudent = allStudents.find(s => String(s.user_id) === String(routeUserId) || String(s.id) === String(routeUserId))
-        if (matchedStudent) {
-          profile.name = matchedStudent.name || 'Student'
-          profile.email = matchedStudent.email || ''
-          profile.phone = '+1 (555) 123-4567'
-          profile.rollNumber = matchedStudent.roll_number || 'N/A'
-          profile.branch = matchedStudent.branch || 'N/A'
-          profile.yearOfStudy = matchedStudent.year_of_study != null ? `Year ${matchedStudent.year_of_study}` : 'N/A'
-          profile.cgpa = matchedStudent.cgpa != null ? String(matchedStudent.cgpa) : 'N/A'
-          profile.username = matchedStudent.email ? matchedStudent.email.split('@')[0] : 'student'
-          
-          if (matchedStudent.resume) {
-            const resumeIdx = profile.documents.findIndex(d => d.id === 'resume')
-            if (resumeIdx !== -1) {
-              profile.documents[resumeIdx].url = matchedStudent.resume
-              profile.documents[resumeIdx].statusMessage = 'Verified PDF resume'
-            } else {
-              profile.documents.push({
-                id: 'resume',
-                name: 'Resume',
-                statusMessage: 'Verified PDF resume',
-                iconClass: 'bi bi-file-earmark-text-fill',
-                iconTheme: 'theme-pdf',
-                url: matchedStudent.resume
-              })
-            }
+        const studentData = await res.json()
+        profile.name = studentData.name || 'Student'
+        profile.email = studentData.email || ''
+        profile.phone = '+1 (555) 123-4567'
+        profile.rollNumber = studentData.roll_number || 'N/A'
+        profile.branch = studentData.branch || 'N/A'
+        profile.yearOfStudy = studentData.year_of_study != null ? `Year ${studentData.year_of_study}` : 'N/A'
+        profile.cgpa = studentData.cgpa != null ? String(studentData.cgpa) : 'N/A'
+        profile.username = studentData.username || (studentData.email ? studentData.email.split('@')[0] : 'student')
+        
+        if (studentData.resume) {
+          const resumeIdx = profile.documents.findIndex(d => d.id === 'resume')
+          if (resumeIdx !== -1) {
+            profile.documents[resumeIdx].url = studentData.resume
+            profile.documents[resumeIdx].statusMessage = 'Verified PDF resume'
+          } else {
+            profile.documents.push({
+              id: 'resume',
+              name: 'Resume',
+              statusMessage: 'Verified PDF resume',
+              iconClass: 'bi bi-file-earmark-text-fill',
+              iconTheme: 'theme-pdf',
+              url: studentData.resume
+            })
           }
-          profile.branchCode = matchedStudent.branch || 'Computer Science'
-          profile.status = matchedStudent.isBlacklisted ? 'Blacklisted' : 'Active Placement'
-        } else {
-          triggerToast('Student profile not found.')
         }
+        profile.branchCode = studentData.branch || 'Computer Science'
+        profile.status = studentData.isBlacklisted ? 'Blacklisted' : 'Active Placement'
       } else {
-        triggerToast('Failed to fetch student details from server.')
+        const errData = await res.json()
+        triggerToast(errData.message || 'Failed to fetch student details from server.')
       }
     } catch (err) {
       console.error('Error fetching student details:', err)
       triggerToast('Error loading student profile data.')
     }
   } else {
-    // Viewing own student profile
+    // Viewing own student profile fallback
     if (currentUser.value) {
       if (currentUser.value.name) profile.name = currentUser.value.name
       if (currentUser.value.username) profile.username = currentUser.value.username
       if (currentUser.value.email) profile.email = currentUser.value.email
     }
+  }
 
-    // Load custom frontend profile modifications if they exist locally
-    const localSavedData = localStorage.getItem('student_profile_data')
-    if (localSavedData) {
-      try {
-        const parsedData = JSON.parse(localSavedData)
-        Object.assign(profile, parsedData)
-      } catch (e) {
-        console.error('Failed to parse locally saved profile details:', e)
-      }
+  // Load custom frontend profile modifications if they exist locally
+  const localSavedData = localStorage.getItem('student_profile_data')
+  if (localSavedData) {
+    try {
+      const parsedData = JSON.parse(localSavedData)
+      Object.assign(profile, parsedData)
+    } catch (e) {
+      console.error('Failed to parse locally saved profile details:', e)
     }
   }
 })
 
-// Share profile link helper
-const shareProfileLink = () => {
-  const dummyUrl = `${window.location.origin}/student/profile/${profile.username}`
-  navigator.clipboard.writeText(dummyUrl).then(() => {
-    triggerToast('Profile link copied to clipboard!')
-  }).catch(() => {
-    triggerToast('Clipboard copy failed.')
-  })
+
+// Back navigation helper
+const goBack = () => {
+  router.back()
 }
 
 // Simulated doc review click
@@ -587,31 +577,32 @@ const viewDoc = (docName) => {
   gap: 12px;
 }
 
-.btn-share {
+.btn-back {
   background-color: #ffffff;
   border: 1px solid #ced4da;
   color: #495057;
-  width: 40px;
-  height: 40px;
+  padding: 8px 16px;
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14.5px;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
-.btn-share:hover {
+.btn-back:hover {
   background-color: #f8f9fa;
   color: #27231E;
   border-color: #adb5bd;
   transform: translateY(-1px);
 }
 
-.btn-share:active {
+.btn-back:active {
   transform: translateY(0);
 }
+
 
 /* ────────────────────────────────────────────────────────
    ─── MAIN SECTION BODY STYLING ───

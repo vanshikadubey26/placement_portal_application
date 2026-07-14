@@ -262,7 +262,7 @@ function openDriveModal(app) {
 }
 
 function openStudentModal(app) {
-  router.push(`/student/profile/${app.student_id}`)
+  router.push(`/student/profile/${app.student_user_id || app.student_id}`)
 }
 
 async function handleLogout() {

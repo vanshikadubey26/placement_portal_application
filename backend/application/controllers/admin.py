@@ -115,6 +115,7 @@ def get_all_applications():
             "created_at": app.created_at.isoformat() if app.created_at else None,
             "updated_at": app.updated_at.isoformat() if app.updated_at else None,
             "student_id": app.student_id,
+            "student_user_id": user.id if user else None,
             "student_name": user.name if user else None,
             "student_email": user.email if user else None,
             "roll_number": student.roll_number if student else None,

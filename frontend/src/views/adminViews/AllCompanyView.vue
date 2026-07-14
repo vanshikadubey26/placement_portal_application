@@ -23,7 +23,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon total-companies-icon"><i class="bi bi-building"></i></div>
-            <span class="stat-badge positive-badge">Total</span>
           </div>
           <div class="stat-label">Total Companies</div>
           <div class="stat-value">{{ filteredCompanies.length }}</div>
@@ -32,7 +31,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon approved-icon"><i class="bi bi-patch-check"></i></div>
-            <span class="stat-badge positive-badge">Approved</span>
           </div>
           <div class="stat-label">Approved Companies</div>
           <div class="stat-value">{{ approvedCount }}</div>
@@ -41,8 +39,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon pending-icon"><i class="bi bi-hourglass-split"></i></div>
-            <span class="stat-badge negative-badge" v-if="unapprovedCount > 0">Action Required</span>
-            <span class="stat-badge neutral-badge" v-else>All Approved</span>
           </div>
           <div class="stat-label">Unapproved Companies</div>
           <div class="stat-value">{{ unapprovedCount }}</div>
@@ -51,8 +47,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon blacklisted-icon"><i class="bi bi-slash-circle"></i></div>
-            <span class="stat-badge negative-badge" v-if="blacklistedCount > 0">Alert</span>
-            <span class="stat-badge neutral-badge" v-else>Good</span>
           </div>
           <div class="stat-label">Blacklisted Companies</div>
           <div class="stat-value">{{ blacklistedCount }}</div>
@@ -98,7 +92,6 @@
               </tr>
               <tr v-if="filteredUnapprovedCompanies.length === 0">
                 <td colspan="3" class="empty-state">
-                  <div class="empty-icon">🎉</div>
                   <div class="empty-title">No pending approvals</div>
                   <p class="empty-description">All registered companies have been reviewed.</p>
                 </td>
@@ -162,7 +155,7 @@
               </tr>
               <tr v-if="filteredAllCompanies.length === 0">
                 <td colspan="4" class="empty-state">
-                  <div class="empty-icon">🏢</div>
+                  
                   <div class="empty-title">No companies found</div>
                   <p class="empty-description">Try adjusting your search criteria to find registered companies.</p>
                 </td>
@@ -245,23 +238,38 @@ watch(activeNav, (newVal) => {
 })
 
 // ── Fetch from API ───────────────────────────
-onMounted(async () => {
-  const token = localStorage.getItem('access_token')
-  const res = await fetch('http://localhost:5555/admin/all-companies', {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (res.ok) companies.value = await res.json()
+let searchTimeout = null
+
+watch(searchQuery, (newQuery) => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    fetchCompanies(newQuery)
+  }, 300)
+})
+
+async function fetchCompanies(q = '') {
+  try {
+    const token = localStorage.getItem('access_token')
+    const url = q 
+      ? `http://localhost:5555/admin/companies/search?q=${encodeURIComponent(q)}` 
+      : 'http://localhost:5555/admin/all-companies'
+      
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (res.ok) companies.value = await res.json()
+  } catch (err) {
+    console.error('Error fetching companies:', err)
+  }
+}
+
+onMounted(() => {
+  fetchCompanies()
 })
 
 // ── Computed ─────────────────────────────────
 const filteredCompanies = computed(() => {
-  if (!searchQuery.value) return companies.value
-  const q = searchQuery.value.toLowerCase()
-  return companies.value.filter(c =>
-    c.name.toLowerCase().includes(q) ||
-    c.email.toLowerCase().includes(q) ||
-    (c.industry && c.industry.toLowerCase().includes(q))
-  )
+  return companies.value
 })
 
 const filteredUnapprovedCompanies = computed(() =>
@@ -277,14 +285,38 @@ const unapprovedCount = computed(() => companies.value.filter(c => !c.approved).
 const blacklistedCount = computed(() => companies.value.filter(c => c.isBlacklisted).length)
 
 // ── Methods ──────────────────────────────────
-function approveCompany(company) {
-  // TODO: wire to PATCH /admin/approve-company/:id
-  company.approved = true
+async function approveCompany(company) {
+  try {
+    const token = localStorage.getItem('access_token')
+    const res = await fetch(`http://localhost:5555/admin/company/approve/${company.id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (res.ok) {
+      company.approved = !company.approved
+    } else {
+      console.error('Failed to approve company')
+    }
+  } catch (err) {
+    console.error('Error approving company:', err)
+  }
 }
 
-function toggleBlacklist(company) {
-  // TODO: wire to PATCH /admin/blacklist-company/:id
-  company.isBlacklisted = !company.isBlacklisted
+async function toggleBlacklist(company) {
+  try {
+    const token = localStorage.getItem('access_token')
+    const res = await fetch(`http://localhost:5555/admin/company/blacklist/${company.id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (res.ok) {
+      company.isBlacklisted = !company.isBlacklisted
+    } else {
+      console.error('Failed to toggle company blacklist status')
+    }
+  } catch (err) {
+    console.error('Error blacklisting company:', err)
+  }
 }
 
 function viewProfile(company) {
@@ -690,10 +722,6 @@ input:checked + .slider:before {
   padding: 40px 0 !important;
 }
 
-.empty-icon {
-  font-size: 36px;
-  margin-bottom: 10px;
-}
 
 .empty-title {
   font-size: 15px;

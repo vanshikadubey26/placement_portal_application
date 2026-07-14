@@ -1,7 +1,7 @@
 <template>
   <div class="admin-layout">
 
-    <!-- ── Sidebar ─────────────────────────── -->
+    <!-- Sidebar -->
     <Sidebar
       v-model="activeNav"
       :nav-items="navItems"
@@ -11,9 +11,8 @@
       @logout="handleLogout"
     />
 
-    <!-- ── Main Content ────────────────────── -->
+    <!-- Main Content  -->
     <main class="main-content">
-      <!-- Top Bar -->
       <AdminTopbar
         title="Dashboard Overview"
         v-model="globalSearch"
@@ -27,21 +26,7 @@
       <StatCardsGrid :stats="stats" />
 
       <!-- Body Grid -->
-      <div class="bottom-grid">
-
-        <!-- Left Column -->
-        <!-- <div class="left-col">
-          <PendingApprovals
-            :approvals="pendingApprovals"
-            :companies-count="3"
-            :drives-count="2"
-            :total-pending="14"
-            @primary="handlePrimary"
-            @approve="handleApprove"
-            @view-all="handleViewAll"
-          />
-        </div> -->
-    
+      <div class="bottom-grid">    
       </div>
     </main>
 
@@ -51,8 +36,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-
-// ── Sub-components ──────────────────────────
 import Sidebar            from '@/components/Sidebar.vue'
 import AdminTopbar        from '@/components/admin/AdminTopbar.vue'
 import StatCardsGrid      from '@/components/admin/StatCardsGrid.vue'
@@ -88,7 +71,7 @@ const navItems = [
   { label: 'Applications',     icon: '' },
 ]
 
-// ── Data ────────────────────────────────────
+//  Data 
 const stats = ref([
   {
     label: 'Total Students',

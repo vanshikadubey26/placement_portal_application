@@ -19,7 +19,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-total"><i class="bi bi-file-earmark-text"></i></div>
-            <span class="stat-badge badge-neutral">Total</span>
           </div>
           <div class="stat-label">All Applications</div>
           <div class="stat-value">{{ applications.length }}</div>
@@ -28,7 +27,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-interview"><i class="bi bi-calendar-event"></i></div>
-            <span class="stat-badge badge-positive">Scheduled</span>
           </div>
           <div class="stat-label">Interview Schedules</div>
           <div class="stat-value">{{ interviewCount }}</div>
@@ -37,7 +35,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-shortlisted"><i class="bi bi-bookmark-star"></i></div>
-            <span class="stat-badge badge-info">Shortlisted</span>
           </div>
           <div class="stat-label">Shortlisted</div>
           <div class="stat-value">{{ shortlistedCount }}</div>
@@ -46,7 +43,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-placed"><i class="bi bi-trophy"></i></div>
-            <span class="stat-badge badge-positive">Placed</span>
           </div>
           <div class="stat-label">Placed Students</div>
           <div class="stat-value">{{ placedCount }}</div>
@@ -106,7 +102,6 @@
               </tr>
               <tr v-if="filteredApplications.length === 0">
                 <td colspan="6" class="empty-state">
-                  <div class="empty-icon">📋</div>
                   <div class="empty-title">No applications found</div>
                   <p class="empty-desc">No applications match your search.</p>
                 </td>
@@ -374,7 +369,6 @@ async function handleLogout() {
 
 /* ─── Empty state ────────────── */
 .empty-state { text-align: center; padding: 40px 0 !important; }
-.empty-icon { font-size: 36px; margin-bottom: 10px; }
 .empty-title { font-size: 15px; font-weight: 700; color: #1a2e28; }
 .empty-desc { font-size: 12.5px; color: #8a9e9a; margin-top: 6px; }
 

@@ -193,7 +193,7 @@ async function handleLogin() {
   --lp-snow:      #FFF5F5;
   --lp-sienna:    #E07A5F;
 
-  background-color: var(--lp-snow);
+  background-color: #f5f5f0;
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
 }

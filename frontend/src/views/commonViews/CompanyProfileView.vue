@@ -51,8 +51,8 @@
 
           <!-- Action Buttons -->
           <div class="header-actions">
-            <button @click="shareProfileLink" class="btn-share" title="Share Profile Link">
-              <i class="bi bi-share"></i>
+            <button @click="goBack" class="btn-back" title="Go Back">
+              <i class="bi bi-arrow-left"></i> Back
             </button>
           </div>
         </div>
@@ -297,32 +297,23 @@ onMounted(async () => {
   if (routeCompanyId) {
     try {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('http://localhost:5555/admin/all-companies', {
+      const res = await fetch(`http://localhost:5555/common/company/profile/${routeCompanyId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
-        const allCompanies = await res.json()
-        const matchedCompany = allCompanies.find(c => String(c.id) === String(routeCompanyId))
-        if (matchedCompany) {
-          // Merge API properties
-          profile.name = matchedCompany.name || 'Company'
-          profile.email = matchedCompany.email || ''
-          profile.industry = matchedCompany.industry || 'Technology Solutions'
-          profile.approved = matchedCompany.approved
-          profile.isBlacklisted = matchedCompany.isBlacklisted
-          profile.username = matchedCompany.name ? matchedCompany.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'company'
-
-          // Generate clean realistic fallback data since backend model has them but admin list doesn't return them
-          const cleanedName = profile.name.toLowerCase().replace(/[^a-z0-9]/g, '')
-          profile.website = `https://www.${cleanedName}.com`
-          profile.pocName = 'Talent Acquisition Team'
-          profile.pocEmail = `recruiting@${cleanedName}.com`
-          profile.headOffice = 'Seattle, Washington'
-          profile.scale = '500 - 1,000 Employees'
-          profile.description = `${profile.name} is a leading enterprise in the ${profile.industry} sector. Known for innovation and modern engineering paradigms, they provide industry-recognized software solutions, business operations architecture, and engineering platforms for cloud scale.`
-        } else {
-          triggerToast('Company profile not found.')
-        }
+        const companyData = await res.json()
+        profile.name = companyData.name || 'Company'
+        profile.email = companyData.email || ''
+        profile.industry = companyData.industry || 'Technology Solutions'
+        profile.approved = companyData.approved
+        profile.isBlacklisted = companyData.isBlacklisted
+        profile.username = companyData.username || (companyData.name ? companyData.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'company')
+        profile.website = companyData.website || `https://www.${profile.username}.com`
+        profile.pocName = companyData.pocName || 'Talent Acquisition Team'
+        profile.pocEmail = companyData.pocEmail || `recruiting@${profile.username}.com`
+        profile.headOffice = companyData.headOffice || 'Seattle, Washington'
+        profile.scale = companyData.scale || '500 - 1,000 Employees'
+        profile.description = companyData.description || `${profile.name} is a leading enterprise in the ${profile.industry} sector. Known for innovation and modern engineering paradigms, they provide industry-recognized software solutions, business operations architecture, and engineering platforms for cloud scale.`
       } else {
         triggerToast('Failed to fetch company details from server.')
       }
@@ -340,14 +331,9 @@ onMounted(async () => {
   }
 })
 
-// Share profile link helper
-const shareProfileLink = () => {
-  const dummyUrl = `${window.location.origin}/company/profile/${route.params.companyid || profile.username}`
-  navigator.clipboard.writeText(dummyUrl).then(() => {
-    triggerToast('Profile link copied to clipboard!')
-  }).catch(() => {
-    triggerToast('Clipboard copy failed.')
-  })
+// Back navigation helper
+const goBack = () => {
+  router.back()
 }
 
 // Simulated doc review click
@@ -524,29 +510,29 @@ const viewDoc = (docName) => {
   gap: 12px;
 }
 
-.btn-share {
+.btn-back {
   background-color: #ffffff;
   border: 1px solid #ced4da;
   color: #495057;
-  width: 40px;
-  height: 40px;
+  padding: 8px 16px;
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14.5px;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
-.btn-share:hover {
+.btn-back:hover {
   background-color: #f8f9fa;
   color: #27231E;
   border-color: #adb5bd;
   transform: translateY(-1px);
 }
 
-.btn-share:active {
+.btn-back:active {
   transform: translateY(0);
 }
 

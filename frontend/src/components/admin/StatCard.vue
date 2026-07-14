@@ -4,7 +4,6 @@
       <div class="stat-icon" :style="{ background: iconBg, color: iconColor }">
         <span v-html="icon"></span>
       </div>
-      <span class="stat-badge" :style="{ color: badgeColor }">{{ badge }}</span>
     </div>
     <div class="stat-label">{{ label }}</div>
     <div class="stat-value">{{ value }}</div>
@@ -15,12 +14,10 @@
 defineProps({
   label:      { type: String, required: true },
   value:      { type: String, required: true },
-  /** Emoji or HTML string for the icon */
+
   icon:       { type: String, default: '📊' },
   iconBg:     { type: String, default: '#e8f4f1' },
   iconColor:  { type: String, default: '#2d6b5e' },
-  badge:      { type: String, default: '' },
-  badgeColor: { type: String, default: '#2d6b5e' },
 })
 </script>
 

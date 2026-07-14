@@ -66,6 +66,7 @@ class Drive(db.Model):
    positions = db.Column(db.Integer, nullable=True)
    applications = db.relationship('Application', backref='drive', lazy=True)
    created_at = db.Column(db.DateTime, default=ist_now)
+   approved = db.Column(db.Boolean, default=False, nullable=False)
 
 
 class Application(db.Model):

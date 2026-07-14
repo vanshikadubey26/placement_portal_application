@@ -19,7 +19,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-total"><i class="bi bi-megaphone"></i></div>
-            <span class="stat-badge badge-neutral">Total</span>
           </div>
           <div class="stat-label">All Drives</div>
           <div class="stat-value">{{ drives.length }}</div>
@@ -28,7 +27,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-active"><i class="bi bi-check-circle"></i></div>
-            <span class="stat-badge badge-positive">Active</span>
           </div>
           <div class="stat-label">Active Drives</div>
           <div class="stat-value">{{ activeDrivesCount }}</div>
@@ -37,19 +35,18 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-completed"><i class="bi bi-flag-fill"></i></div>
-            <span class="stat-badge badge-neutral">Done</span>
           </div>
           <div class="stat-label">Completed Drives</div>
           <div class="stat-value">{{ completedDrivesCount }}</div>
         </div>
       </section>
 
-      <!-- All Drives Table -->
+      <!-- Unapproved Drives Table -->
       <section class="card table-card">
         <div class="table-header">
           <div class="table-title-group">
-            <h2 class="table-title">All Placement Drives</h2>
-            <p class="table-subtitle">Complete list of all placement drives across all companies.</p>
+            <h2 class="table-title">Unapproved Placement Drives (Pending Approval)</h2>
+            <p class="table-subtitle">Review and verify placement drives before they go live for students.</p>
           </div>
         </div>
 
@@ -64,11 +61,11 @@
                 <th>Positions</th>
                 <th>Deadline</th>
                 <th class="text-center">Status</th>
-                <th class="text-center">Details</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="drive in filteredDrives" :key="drive.id">
+              <tr v-for="drive in filteredUnapprovedDrives" :key="drive.id">
                 <td class="drive-title-cell">
                   <div class="drive-info">
                     <span class="drive-title-text">{{ drive.title }}</span>
@@ -94,19 +91,97 @@
                   <span class="expired-tag" v-if="isExpired(drive.deadline)">Expired</span>
                 </td>
                 <td class="text-center">
-                  <span :class="['status-badge', drive.status === 'Approved' ? 'badge-approved' : 'badge-unapproved']">
-                    {{ drive.status }}
+                  <span class="status-badge badge-unapproved">
+                    Unapproved
                   </span>
                 </td>
                 <td class="text-center">
-                  <button class="btn-details" @click="viewDetails(drive)">View</button>
+                  <div class="action-buttons-wrapper">
+                    <button class="btn-approve" @click="toggleApproval(drive)">
+                      Approve
+                    </button>
+                    <button class="btn-details" @click="viewDetails(drive)">View</button>
+                  </div>
                 </td>
               </tr>
-              <tr v-if="filteredDrives.length === 0">
+              <tr v-if="filteredUnapprovedDrives.length === 0">
                 <td colspan="8" class="empty-state">
-                  <div class="empty-icon">📣</div>
-                  <div class="empty-title">No drives found</div>
-                  <p class="empty-desc">No placement drives match your search.</p>
+                  <div class="empty-title">No pending approvals</div>
+                  <p class="empty-desc">All placement drives have been reviewed and approved.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Approved Drives Table -->
+      <section class="card table-card">
+        <div class="table-header">
+          <div class="table-title-group">
+            <h2 class="table-title">Approved Placement Drives</h2>
+            <p class="table-subtitle">Monitor and manage all approved corporate placement drives.</p>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="drives-table">
+            <thead>
+              <tr>
+                <th>Drive Title</th>
+                <th>Company</th>
+                <th>Location / Mode</th>
+                <th>Pay Scale</th>
+                <th>Positions</th>
+                <th>Deadline</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="drive in filteredApprovedDrives" :key="drive.id">
+                <td class="drive-title-cell">
+                  <div class="drive-info">
+                    <span class="drive-title-text">{{ drive.title }}</span>
+                    <span class="drive-sub-text">{{ drive.branches }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="drive-info">
+                    <span class="company-name">{{ drive.company_name }}</span>
+                    <span class="drive-sub-text">{{ drive.company_industry }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="drive-info">
+                    <span>{{ drive.location || '—' }}</span>
+                    <span class="drive-sub-text">{{ drive.workMode }}</span>
+                  </div>
+                </td>
+                <td class="pay-cell">{{ drive.payScale || '—' }}</td>
+                <td class="text-center positions-cell">{{ drive.positions ?? '—' }}</td>
+                <td class="date-cell" :class="{ 'text-danger': isExpired(drive.deadline) }">
+                  {{ formatDate(drive.deadline) }}
+                  <span class="expired-tag" v-if="isExpired(drive.deadline)">Expired</span>
+                </td>
+                <td class="text-center">
+                  <span class="status-badge badge-approved">
+                    Approved
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="action-buttons-wrapper">
+                    <button class="btn-unapprove" @click="toggleApproval(drive)">
+                      Unapprove
+                    </button>
+                    <button class="btn-details" @click="viewDetails(drive)">View</button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="filteredApprovedDrives.length === 0">
+                <td colspan="8" class="empty-state">
+                  <div class="empty-title">No approved drives found</div>
+                  <p class="empty-desc">Try adjusting your search criteria or approve pending drives.</p>
                 </td>
               </tr>
             </tbody>
@@ -126,7 +201,7 @@
               </div>
             </div>
             <div class="modal-body">
-              <div class="info-row"><span class="info-label">Status</span><span :class="['status-badge', selectedDrive?.status === 'Approved' ? 'badge-approved' : 'badge-unapproved']">{{ selectedDrive?.status }}</span></div>
+              <div class="info-row"><span class="info-label">Status</span><span :class="['status-badge', selectedDrive?.approved ? 'badge-approved' : 'badge-unapproved']">{{ selectedDrive?.approved ? 'Approved' : 'Unapproved' }}</span></div>
               <div class="info-row"><span class="info-label">Deadline</span><span class="info-value" :class="{ 'text-danger': isExpired(selectedDrive?.deadline) }">{{ formatDate(selectedDrive?.deadline) }}<span v-if="isExpired(selectedDrive?.deadline)"> (Expired)</span></span></div>
               <div class="info-row"><span class="info-label">Pay Scale</span><span class="info-value">{{ selectedDrive?.payScale || '—' }}</span></div>
               <div class="info-row"><span class="info-label">Positions</span><span class="info-value">{{ selectedDrive?.positions ?? '—' }}</span></div>
@@ -198,8 +273,16 @@ const filteredDrives = computed(() => {
   )
 })
 
+const filteredUnapprovedDrives = computed(() =>
+  filteredDrives.value.filter(d => !d.approved)
+)
+
+const filteredApprovedDrives = computed(() =>
+  filteredDrives.value.filter(d => d.approved)
+)
+
 const activeDrivesCount = computed(() =>
-  drives.value.filter(d => d.status === 'Approved' && !isExpired(d.deadline)).length
+  drives.value.filter(d => d.approved && !isExpired(d.deadline)).length
 )
 
 const completedDrivesCount = computed(() =>
@@ -209,6 +292,24 @@ const completedDrivesCount = computed(() =>
 // ── Methods ───────────────────────────────────
 function viewDetails(drive) {
   router.push(`/drive/profile/${drive.id}`)
+}
+
+async function toggleApproval(drive) {
+  try {
+    const token = localStorage.getItem('access_token')
+    const res = await fetch(`http://localhost:5555/admin/drive/approve/${drive.id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (res.ok) {
+      const data = await res.json()
+      drive.approved = data.approved
+    } else {
+      console.error('Failed to toggle drive approval')
+    }
+  } catch (err) {
+    console.error('Error toggling drive approval:', err)
+  }
 }
 
 function isExpired(deadlineStr) {
@@ -350,9 +451,45 @@ async function handleLogout() {
 }
 .btn-details:hover { background: #f0f5f4; border-color: #4a6e6b; }
 
+.action-buttons-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-approve {
+  background: #2d6b5e;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-approve:hover {
+  background: #235349;
+}
+
+.btn-unapprove {
+  background: #fde8e8;
+  color: #9b1c1c;
+  border: 1.5px solid #f8b4b4;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-unapprove:hover {
+  background: #fbd5d5;
+  border-color: #f0a3a3;
+}
+
 /* ─── Empty state ────────────── */
 .empty-state { text-align: center; padding: 40px 0 !important; }
-.empty-icon { font-size: 36px; margin-bottom: 10px; }
 .empty-title { font-size: 15px; font-weight: 700; color: #1a2e28; }
 .empty-desc { font-size: 12.5px; color: #8a9e9a; margin-top: 6px; }
 

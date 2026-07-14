@@ -23,7 +23,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon total-students-icon"><i class="bi bi-mortarboard"></i></div>
-            <span class="stat-badge positive-badge">+5% this wk</span>
           </div>
           <div class="stat-label">Total Students</div>
           <div class="stat-value">{{ filteredStudents.length }}</div>
@@ -32,8 +31,6 @@
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon blacklisted-icon"><i class="bi bi-slash-circle"></i></div>
-            <span class="stat-badge negative-badge" v-if="blacklistedCount > 0">Alert</span>
-            <span class="stat-badge neutral-badge" v-else>Good</span>
           </div>
           <div class="stat-label">Blacklisted Students</div>
           <div class="stat-value">{{ blacklistedCount }}</div>
@@ -101,7 +98,6 @@
               </tr>
               <tr v-if="filteredStudents.length === 0">
                 <td colspan="6" class="empty-state">
-                  <div class="empty-icon">🔍</div>
                   <div class="empty-title">No students found</div>
                   <p class="empty-description">Try adjusting your search criteria to find registered students.</p>
                 </td>
@@ -197,11 +193,25 @@ watch(activeNav, (newVal) => {
 })
 
 // Fetch Student details from API
-async function fetchStudents() {
+let searchTimeout = null
+
+watch(searchQuery, (newQuery) => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    fetchStudents(newQuery)
+  }, 300)
+})
+
+// Fetch Student details from API
+async function fetchStudents(q = '') {
   loading.value = true
   try {
     const token = localStorage.getItem('access_token')
-    const res = await fetch('http://localhost:5555/admin/all-students', {
+    const url = q 
+      ? `http://localhost:5555/admin/students/search?q=${encodeURIComponent(q)}` 
+      : 'http://localhost:5555/admin/all-students'
+      
+    const res = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -225,23 +235,30 @@ onMounted(() => {
 
 // Computed Properties
 const filteredStudents = computed(() => {
-  if (!searchQuery.value) return students.value
-  const query = searchQuery.value.toLowerCase()
-  return students.value.filter(student => 
-    (student.name && student.name.toLowerCase().includes(query)) ||
-    (student.email && student.email.toLowerCase().includes(query)) ||
-    (student.roll_number && student.roll_number.toLowerCase().includes(query)) ||
-    (student.branch && student.branch.toLowerCase().includes(query))
-  )
+  return students.value
 })
 
 const blacklistedCount = computed(() => {
   return filteredStudents.value.filter(s => s.isBlacklisted).length
 })
 
-// Methods
-function toggleStatus(student) {
-  student.isBlacklisted = !student.isBlacklisted
+async function toggleStatus(student) {
+  try {
+    const token = localStorage.getItem('access_token')
+    const res = await fetch(`http://localhost:5555/admin/student/blacklist/${student.user_id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    if (res.ok) {
+      student.isBlacklisted = !student.isBlacklisted
+    } else {
+      console.error('Failed to toggle blacklist status')
+    }
+  } catch (err) {
+    console.error('Error toggling blacklist status:', err)
+  }
 }
 
 function viewProfile(student) {
@@ -609,10 +626,6 @@ input:checked + .slider:before {
   padding: 48px 0 !important;
 }
 
-.empty-icon {
-  font-size: 40px;
-  margin-bottom: 12px;
-}
 
 .empty-title {
   font-size: 16px;

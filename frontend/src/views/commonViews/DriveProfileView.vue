@@ -45,8 +45,8 @@
                 <span :class="['profile-badge', isExpired(drive.deadline) ? 'badge-status-expired' : 'badge-status-active']">
                   {{ isExpired(drive.deadline) ? 'Deadline Expired' : 'Active Drive' }}
                 </span>
-                <span :class="['profile-badge', drive.status === 'Approved' ? 'badge-status-approved' : 'badge-status-pending']">
-                  {{ drive.status }}
+                <span :class="['profile-badge', drive.approved ? 'badge-status-approved' : 'badge-status-pending']">
+                  {{ drive.approved ? 'Approved' : 'Unapproved' }}
                 </span>
               </div>
             </div>
@@ -54,8 +54,8 @@
 
           <!-- Action Buttons -->
           <div class="header-actions">
-            <button @click="shareProfileLink" class="btn-share" title="Share Drive Link">
-              <i class="bi bi-share"></i>
+            <button @click="goBack" class="btn-back" title="Go Back">
+              <i class="bi bi-arrow-left"></i> Back
             </button>
           </div>
         </div>
@@ -200,6 +200,7 @@ const drive = reactive({
   company_name: 'NexusTech Solutions',
   company_industry: 'Cloud Infrastructure',
   status: 'Approved',
+  approved: false,
   deadline: '2026-07-30',
   payScale: '12 LPA',
   positions: 5,
@@ -318,32 +319,27 @@ onMounted(async () => {
   if (routeDriveId) {
     try {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('http://localhost:5555/admin/all-drives', {
+      const res = await fetch(`http://localhost:5555/common/drive/profile/${routeDriveId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
-        const allDrives = await res.json()
-        const matchedDrive = allDrives.find(d => String(d.id) === String(routeDriveId))
-        if (matchedDrive) {
-          // Merge API properties
-          drive.title = matchedDrive.title || 'Placement Drive'
-          drive.company_name = matchedDrive.company_name || 'Associated Corporate'
-          drive.company_industry = matchedDrive.company_industry || 'Information Technology'
-          drive.status = matchedDrive.status || 'Pending'
-          drive.deadline = matchedDrive.deadline || ''
-          drive.payScale = matchedDrive.payScale || 'N/A'
-          drive.positions = matchedDrive.positions ?? 0
-          drive.location = matchedDrive.location || 'N/A'
-          drive.workMode = matchedDrive.workMode || 'On-site'
-          drive.eligibility = matchedDrive.eligibility || 'N/A'
-          drive.batch = matchedDrive.batch || 'N/A'
-          drive.branches = matchedDrive.branches || 'N/A'
-          drive.skillsRequired = matchedDrive.skillsRequired || 'N/A'
-          drive.interviewRounds = matchedDrive.interviewRounds || 'N/A'
-          drive.description = matchedDrive.description || 'No detailed job description provided.'
-        } else {
-          triggerToast('Placement drive details not found.')
-        }
+        const driveData = await res.json()
+        drive.title = driveData.title || 'Placement Drive'
+        drive.company_name = driveData.company_name || 'Associated Corporate'
+        drive.company_industry = driveData.company_industry || 'Information Technology'
+        drive.status = driveData.status || 'Pending'
+        drive.approved = driveData.approved ?? false
+        drive.deadline = driveData.deadline || ''
+        drive.payScale = driveData.payScale || 'N/A'
+        drive.positions = driveData.positions ?? 0
+        drive.location = driveData.location || 'N/A'
+        drive.workMode = driveData.workMode || 'On-site'
+        drive.eligibility = driveData.eligibility || 'N/A'
+        drive.batch = driveData.batch || 'N/A'
+        drive.branches = driveData.branches || 'N/A'
+        drive.skillsRequired = driveData.skillsRequired || 'N/A'
+        drive.interviewRounds = driveData.interviewRounds || 'N/A'
+        drive.description = driveData.description || 'No detailed job description provided.'
       } else {
         triggerToast('Failed to fetch drive details from server.')
       }
@@ -354,14 +350,9 @@ onMounted(async () => {
   }
 })
 
-// Share profile link helper
-const shareProfileLink = () => {
-  const dummyUrl = `${window.location.origin}/drive/profile/${route.params.driveid || 'details'}`
-  navigator.clipboard.writeText(dummyUrl).then(() => {
-    triggerToast('Drive link copied to clipboard!')
-  }).catch(() => {
-    triggerToast('Clipboard copy failed.')
-  })
+// Back navigation helper
+const goBack = () => {
+  router.back()
 }
 
 const isExpired = (deadlineStr) => {
@@ -555,29 +546,29 @@ const formatDate = (dateStr) => {
   gap: 12px;
 }
 
-.btn-share {
+.btn-back {
   background-color: #ffffff;
   border: 1px solid #ced4da;
   color: #495057;
-  width: 40px;
-  height: 40px;
+  padding: 8px 16px;
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14.5px;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
-.btn-share:hover {
+.btn-back:hover {
   background-color: #f8f9fa;
   color: #27231E;
   border-color: #adb5bd;
   transform: translateY(-1px);
 }
 
-.btn-share:active {
+.btn-back:active {
   transform: translateY(0);
 }
 

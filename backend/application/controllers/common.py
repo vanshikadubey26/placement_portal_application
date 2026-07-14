@@ -44,3 +44,78 @@ def get_student_profile(id):
     }
     
     return jsonify(profile_data), 200
+
+
+@common_bp.route('/common/company/profile/<int:id>', methods=['GET'])
+@jwt_required()
+def get_company_profile(id):
+    claims = get_jwt()
+    role = claims.get('role')
+
+    if role not in ['admin', 'student', 'recruiter']:
+        return jsonify({"message": "Access forbidden: Unauthorized role."}), 403
+
+    company = Company.query.get(id)
+    if not company:
+        return jsonify({"message": "Company profile not found."}), 404
+
+    profile_data = {
+        "id": company.id,
+        "username": company.username,
+        "email": company.email,
+        "name": company.name,
+        "approved": company.approved,
+        "description": company.description,
+        "industry": company.industry,
+        "scale": company.scale,
+        "headOffice": company.headOffice,
+        "website": company.website,
+        "logo": company.logo,
+        "pocName": company.pocName,
+        "pocEmail": company.pocEmail,
+        "isBlacklisted": company.isBlacklisted,
+        "created_at": company.created_at.isoformat() if company.created_at else None
+    }
+    
+    return jsonify(profile_data), 200
+
+
+@common_bp.route('/common/drive/profile/<int:id>', methods=['GET'])
+@jwt_required()
+def get_drive_profile(id):
+    claims = get_jwt()
+    role = claims.get('role')
+
+    if role not in ['admin', 'student', 'recruiter']:
+        return jsonify({"message": "Access forbidden: Unauthorized role."}), 403
+
+    drive = Drive.query.get(id)
+    if not drive:
+        return jsonify({"message": "Drive profile not found."}), 404
+
+    company = drive.company
+    profile_data = {
+        "id": drive.id,
+        "company_id": drive.company_id,
+        "company_name": company.name if company else None,
+        "company_industry": company.industry if company else None,
+        "status": drive.status,
+        "title": drive.title,
+        "description": drive.description,
+        "eligibility": drive.eligibility,
+        "batch": drive.batch,
+        "branches": drive.branches,
+        "deadline": drive.deadline.isoformat() if drive.deadline else None,
+        "skillsRequired": drive.skillsRequired,
+        "payScale": drive.payScale,
+        "location": drive.location,
+        "workMode": drive.workMode,
+        "interviewRounds": drive.interviewRounds,
+        "positions": drive.positions,
+        "created_at": drive.created_at.isoformat() if drive.created_at else None,
+        "approved": drive.approved
+    }
+    
+    return jsonify(profile_data), 200
+
+

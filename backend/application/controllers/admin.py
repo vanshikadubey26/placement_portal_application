@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt
 from application.models import User, Company, Drive, Application, Student
 from application.database import db 
+from application.controllers.redis import get_cache, set_cache, delete_cache
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -12,6 +13,13 @@ def get_all_students():
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({"message": "Access forbidden: Admins only."}), 403
+
+    cached_students = get_cache("admin_all_students")
+    if cached_students is not None:
+        print("CACHE HIT: admin_all_students")
+        return jsonify(cached_students), 200
+    else:
+        print("CACHE MISS: admin_all_students")
 
     users_query = User.query.filter_by(type='student').all()
     students_list = []
@@ -33,6 +41,7 @@ def get_all_students():
             "created_at": user.created_at.isoformat() if user.created_at else None
         })
         
+    set_cache("admin_all_students", students_list, timeout=60)
     return jsonify(students_list), 200
 
 
@@ -43,6 +52,13 @@ def get_all_companies():
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({"message": "Access forbidden: Admins only."}), 403
+
+    cached_companies = get_cache("admin_all_companies")
+    if cached_companies is not None:
+        print("CACHE HIT: admin_all_companies")
+        return jsonify(cached_companies), 200
+    else:
+        print("CACHE MISS: admin_all_companies")
 
     companies = Company.query.all()
     companies_list = [
@@ -57,6 +73,9 @@ def get_all_companies():
         for c in companies
     ]
 
+
+
+    set_cache("admin_all_companies", companies_list, timeout=60)
     return jsonify(companies_list), 200
 
 #API to fetch all drives
@@ -163,6 +182,7 @@ def student_blacklist(user_id):
     
     user.isBlacklisted = not user.isBlacklisted
     db.session.commit()
+    delete_cache("admin_all_students")
 
     return jsonify({"message": f"User {user.name} {'blacklisted' if user.isBlacklisted else 'unblacklisted'} successfully."}), 200
 
@@ -180,6 +200,7 @@ def company_blacklist(company_id):
     
     company.isBlacklisted = not company.isBlacklisted
     db.session.commit()
+    delete_cache("admin_all_companies")
 
     return jsonify({"message": f"Company {company.name} {'blacklisted' if company.isBlacklisted else 'unblacklisted'} successfully."}), 200
 
@@ -197,6 +218,7 @@ def company_approve(company_id):
     
     company.approved = not company.approved
     db.session.commit()
+    delete_cache("admin_all_companies")
 
     return jsonify({"message": f"Company {company.name} {'approved' if company.approved else 'unapproved'} successfully."}), 200
 

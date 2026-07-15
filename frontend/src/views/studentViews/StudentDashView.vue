@@ -115,6 +115,21 @@
           <!-- Empty for now, stats display above -->
         </div>
 
+        <!-- Charts Section -->
+        <section class="charts-grid">
+          <div class="chart-card">
+            <h3 class="chart-title"><i class="bi bi-pie-chart-fill"></i> Application Status</h3>
+            <div class="chart-wrap">
+              <canvas ref="statusChartRef"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title"><i class="bi bi-graph-up-arrow"></i> My Placement Journey</h3>
+            <div class="chart-wrap">
+              <canvas ref="journeyChartRef"></canvas>
+            </div>
+          </div>
+        </section>
 
       </div>
     </main>
@@ -125,6 +140,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
+import Chart from 'chart.js/auto'
 
 const router = useRouter()
 const activeNav = ref('Dashboard')
@@ -175,6 +191,46 @@ const drives = ref([])
 const applications = ref([])
 const interviews = ref([])
 const applyingDriveId = ref(null)
+const statusChartRef = ref(null)
+const journeyChartRef = ref(null)
+let statusChartInst = null
+let journeyChartInst = null
+
+function renderCharts() {
+  const applied = applications.value.filter(a => a.status?.toLowerCase() === 'applied').length
+  const shortlisted = applications.value.filter(a => ['shortlisted', 'interview scheduled'].includes(a.status?.toLowerCase())).length
+  const rejected = applications.value.filter(a => a.status?.toLowerCase() === 'rejected').length
+  const selected = applications.value.filter(a => a.status?.toLowerCase() === 'selected').length
+
+  if (statusChartRef.value) {
+    if (statusChartInst) statusChartInst.destroy()
+    statusChartInst = new Chart(statusChartRef.value.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Applied', 'Shortlisted', 'Rejected', 'Selected'],
+        datasets: [{ data: [applied, shortlisted, rejected, selected], backgroundColor: ['#81b29a', '#3d5a80', '#e07a5f', '#2d6b5e'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 12 } } } } }
+    })
+  }
+
+  if (journeyChartRef.value) {
+    if (journeyChartInst) journeyChartInst.destroy()
+    journeyChartInst = new Chart(journeyChartRef.value.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Drives Available', 'Applied', 'Shortlisted', 'Interviews', 'Selected'],
+        datasets: [{
+          label: 'Count',
+          data: [drives.value.length, applications.value.length, shortlisted, interviews.value.length, selected],
+          backgroundColor: ['#c8d3d2', '#81b29a', '#3d5a80', '#6b21a8', '#2d6b5e'],
+          borderRadius: 8
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    })
+  }
+}
 
 const shortlistedCount = computed(() => {
   return applications.value.filter(app => {
@@ -245,6 +301,7 @@ async function fetchDashboardData() {
   } finally {
     loading.value = false
   }
+  renderCharts()
 }
 
 onMounted(() => {
@@ -434,4 +491,42 @@ function getStatusClass(status) {
 .toast-alert { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #fff; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; }
 .toast-alert.success { background: #2d6b5e; }
 .toast-alert.error { background: #dc2626; }
+
+/* ── Chart Section ─────────────── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 4px;
+}
+
+.chart-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px 24px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+}
+
+.chart-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #27231e;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-title i { color: #2d6b5e; }
+
+.chart-wrap {
+  position: relative;
+  height: 250px;
+}
+
+@media (max-width: 768px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-wrap { height: 210px; }
+}
 </style>

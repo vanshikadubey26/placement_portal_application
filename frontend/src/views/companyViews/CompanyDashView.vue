@@ -52,7 +52,21 @@
         </div>
       </section>
 
-
+      <!-- Charts Section -->
+      <section class="charts-grid">
+        <div class="chart-card">
+          <h3 class="chart-title"><i class="bi bi-bar-chart-fill"></i> Application Status Breakdown</h3>
+          <div class="chart-wrap">
+            <canvas ref="statusChartRef"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title"><i class="bi bi-activity"></i> Recruitment Pipeline</h3>
+          <div class="chart-wrap">
+            <canvas ref="pipelineChartRef"></canvas>
+          </div>
+        </div>
+      </section>
 
     </main>
   </div>
@@ -62,6 +76,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '@/components/Sidebar.vue'
+import Chart from 'chart.js/auto'
 
 const router = useRouter()
 const activeNav = ref('Dashboard')
@@ -115,6 +130,41 @@ const companyProfile = ref({
 const drivesCount = ref(0)
 const applications = ref([])
 const interviews = ref([])
+const statusChartRef = ref(null)
+const pipelineChartRef = ref(null)
+let statusChartInst = null
+let pipelineChartInst = null
+
+function renderCharts() {
+  const applied = applications.value.filter(a => a.status?.toLowerCase() === 'applied').length
+  const shortlisted = applications.value.filter(a => a.status?.toLowerCase() === 'shortlisted').length
+  const rejected = applications.value.filter(a => a.status?.toLowerCase() === 'rejected').length
+  const selected = applications.value.filter(a => a.status?.toLowerCase() === 'selected').length
+
+  if (statusChartRef.value) {
+    if (statusChartInst) statusChartInst.destroy()
+    statusChartInst = new Chart(statusChartRef.value.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Applied', 'Shortlisted', 'Rejected', 'Selected'],
+        datasets: [{ data: [applied, shortlisted, rejected, selected], backgroundColor: ['#81b29a', '#3d5a80', '#e07a5f', '#2d6b5e'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } } } }
+    })
+  }
+
+  if (pipelineChartRef.value) {
+    if (pipelineChartInst) pipelineChartInst.destroy()
+    pipelineChartInst = new Chart(pipelineChartRef.value.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Active Drives', 'Total Applicants', 'Shortlisted', 'Interviews', 'Selected'],
+        datasets: [{ label: 'Count', data: [drivesCount.value, applications.value.length, shortlisted, interviewsCount.value, selected], backgroundColor: ['#2d6b5e', '#4a6e6b', '#81b29a', '#3d5a80', '#e07a5f'], borderRadius: 8 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    })
+  }
+}
 
 // Computeds
 const shortlistedCount = computed(() =>
@@ -149,6 +199,7 @@ onMounted(async () => {
     if (drivesRes.ok) { const d = await drivesRes.json(); drivesCount.value = d.length }
     if (appsRes.ok) applications.value = await appsRes.json()
     if (ivRes.ok) interviews.value = await ivRes.json()
+    renderCharts()
   } catch (e) {
     console.error('Dashboard fetch error:', e)
   }
@@ -209,7 +260,7 @@ async function handleLogout() {
   gap: 22px;
 }
 
-/* ── Top Bar ───────────────────── */
+/*Top Bar*/
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -266,7 +317,7 @@ async function handleLogout() {
   color: #8a9e9a;
 }
 
-/* ── Metrics Grid ──────────────── */
+/* ── Metrics Grid ──*/
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -456,5 +507,42 @@ async function handleLogout() {
   padding: 40px 0 !important;
   color: #8a9e9a;
   font-size: 13.5px;
+}
+
+/* ── Chart Section ─────────────── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.chart-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px 24px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+}
+
+.chart-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #27231e;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-title i { color: #2d6b5e; }
+
+.chart-wrap {
+  position: relative;
+  height: 260px;
+}
+
+@media (max-width: 768px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-wrap { height: 220px; }
 }
 </style>

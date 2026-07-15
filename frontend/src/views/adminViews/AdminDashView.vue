@@ -26,7 +26,25 @@
       <StatCardsGrid :stats="stats" />
 
       <!-- Body Grid -->
-      <div class="bottom-grid">    
+      <!-- Body Grid -->
+      <div class="bottom-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 10px;">
+        <div class="card" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);">
+          <h3 style="font-size: 16px; font-weight: 700; color: #27231E; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="bi bi-bar-chart-line-fill" style="color: #2d6b5e;"></i> System Metrics Trend
+          </h3>
+          <div style="position: relative; height: 300px;">
+            <canvas ref="barChartRef"></canvas>
+          </div>
+        </div>
+
+        <div class="card" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);">
+          <h3 style="font-size: 16px; font-weight: 700; color: #27231E; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="bi bi-pie-chart-fill" style="color: #b94a3b;"></i> Database Share
+          </h3>
+          <div style="position: relative; height: 300px; display: flex; align-items: center; justify-content: center;">
+            <canvas ref="pieChartRef"></canvas>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -39,8 +57,13 @@ import { useRouter } from 'vue-router'
 import Sidebar            from '@/components/Sidebar.vue'
 import AdminTopbar        from '@/components/admin/AdminTopbar.vue'
 import StatCardsGrid      from '@/components/admin/StatCardsGrid.vue'
+import Chart              from 'chart.js/auto'
 
 const router = useRouter()
+const barChartRef = ref(null)
+const pieChartRef = ref(null)
+let barChartInstance = null
+let pieChartInstance = null
 
 // State
 const activeNav     = ref('Dashboard')
@@ -113,6 +136,49 @@ const stats = ref([
   },
 ])
 
+const renderCharts = (data) => {
+  if (barChartRef.value) {
+    const ctx = barChartRef.value.getContext('2d')
+    if (barChartInstance) barChartInstance.destroy()
+    barChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Students', 'Companies', 'Job Drives', 'Applications'],
+        datasets: [{
+          label: 'Total Registered / Active',
+          data: [data.total_students, data.total_companies, data.total_job_postings, data.total_applications],
+          backgroundColor: ['#2d6b5e', '#b94a3b', '#e07a5f', '#4a6e6b'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+      }
+    })
+  }
+
+  if (pieChartRef.value) {
+    const ctx = pieChartRef.value.getContext('2d')
+    if (pieChartInstance) pieChartInstance.destroy()
+    pieChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Students', 'Companies', 'Drives', 'Applications'],
+        datasets: [{
+          data: [data.total_students, data.total_companies, data.total_job_postings, data.total_applications],
+          backgroundColor: ['#81b29a', '#e07a5f', '#f4f1de', '#3d5a80']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    })
+  }
+}
+
 onMounted(async () => {
   try {
     const token = localStorage.getItem('access_token')
@@ -125,6 +191,7 @@ onMounted(async () => {
       stats.value[1].value = String(data.total_companies)
       stats.value[2].value = String(data.total_job_postings)
       stats.value[3].value = String(data.total_applications)
+      renderCharts(data)
     }
   } catch (err) {
     console.error('Failed to fetch admin stats:', err)

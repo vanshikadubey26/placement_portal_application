@@ -33,7 +33,7 @@
 
       <!-- Monthly Summary Stats Grid -->
       <section class="stats-grid">
-        <div class="stat-box orange-accent">
+        <div class="stat-box green-accent">
           <span class="stat-icon"><i class="bi bi-megaphone"></i></span>
           <div class="stat-info">
             <span class="stat-lbl">Drives Created</span>
@@ -188,10 +188,10 @@ const renderChart = () => {
         {
           label: 'Drives Created',
           data: rawData.value.drives,
-          borderColor: '#e07a5f',
-          backgroundColor: 'rgba(224, 122, 95, 0.08)',
+          borderColor: '#81b29a',
+          backgroundColor: 'rgba(129, 178, 154, 0.08)',
           borderWidth: 2,
-          pointBackgroundColor: '#e07a5f',
+          pointBackgroundColor: '#81b29a',
           tension: 0.3,
           fill: true
         },
@@ -391,7 +391,7 @@ async function handleLogout() {
 .report-header-subtitle {
   font-size: 11px;
   font-weight: 800;
-  color: #b94a3b;
+  color: #2d6b5e;
   letter-spacing: 1px;
 }
 
@@ -420,7 +420,7 @@ async function handleLogout() {
   padding: 6px 12px;
   font-size: 13.5px;
   font-weight: 600;
-  color: #b94a3b;
+  color: #2d6b5e;
   outline: none;
   background: #ffffff;
   cursor: pointer;
@@ -454,8 +454,8 @@ async function handleLogout() {
   font-size: 20px;
 }
 
-.sienna-accent .stat-icon { background: #faeae7; color: #b94a3b; }
-.orange-accent .stat-icon { background: #fdf0ea; color: #e07a5f; }
+.sienna-accent .stat-icon { background: #faeae7; color: #2d6b5e; }
+.green-accent .stat-icon { background: #e8f4f1; color: #2d6b5e; }
 .dark-accent .stat-icon { background: #e9ecef; color: #253a35; }
 
 .stat-info {
@@ -511,7 +511,7 @@ async function handleLogout() {
 }
 
 .btn-export {
-  background: #b94a3b;
+  background: #2d6b5e;
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -525,12 +525,47 @@ async function handleLogout() {
   transition: background 0.15s;
 }
 .btn-export:hover {
-  background: #a03a2c;
+  background: #253a35;
 }
 
 .chart-container {
   flex: 1;
   min-height: 380px;
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 72px 16px 30px;
+    gap: 16px;
+  }
+  .report-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .report-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .btn-export {
+    width: 100%;
+    justify-content: center;
+  }
+  .report-card {
+    padding: 16px;
+  }
+  .chart-container {
+    min-height: 280px;
+  }
 }
 </style>

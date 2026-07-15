@@ -28,8 +28,8 @@
         <!--PROFILE HEADER CARD-->
         <div class="header-card">
           <div class="header-left">
-            <div class="avatar-wrapper">
-              <img :src="profile.avatar" alt="Student Profile Picture" class="avatar-img" />
+            <div class="avatar-wrapper" style="display: flex; align-items: center; justify-content: center; background: #e8f4f1; border-radius: 16px; border: 2px solid #ffffff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);">
+              <i class="bi bi-person-fill" style="font-size: 64px; color: #2d6b5e;"></i>
             </div>
 
             <div class="meta-wrapper">
@@ -84,11 +84,6 @@
                 <div class="info-cell">
                   <span class="cell-label">Username</span>
                   <div class="cell-value">@{{ profile.username }}</div>
-                </div>
-
-                <div class="info-cell">
-                  <span class="cell-label">Phone Number</span>
-                  <div class="cell-value">{{ profile.phone }}</div>
                 </div>
               </div>
             </div>
@@ -154,23 +149,9 @@
                       <span class="doc-update-info">{{ doc.statusMessage }}</span>
                     </div>
                   </div>
-                  <a :href="doc.url" target="_blank" class="doc-view-action" @click.prevent="viewDoc(doc.name)">
+                  <a :href="doc.url" target="_blank" class="doc-view-action">
                     View <i class="bi bi-box-arrow-up-right"></i>
                   </a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Core Competencies Card -->
-            <div class="content-card info-card">
-              <div class="card-header">
-                <i class="bi bi-list-stars card-header-icon"></i>
-                <h2 class="card-title">Core Competencies</h2>
-              </div>
-
-              <div class="competencies-container">
-                <div v-for="(comp, idx) in profile.competencies" :key="idx" class="comp-badge">
-                  <span>{{ comp }}</span>
                 </div>
               </div>
             </div>
@@ -209,7 +190,6 @@ const profile = reactive({
   name: 'Alex Rivera',
   username: 'alex_rivera_2024',
   email: 'alex.rivera@university.edu',
-  phone: '+1 (555) 123-4567',
   avatar: '/alex_rivera_profile.png',
   branchCode: 'Computer Science',
   status: 'Active Placement',
@@ -226,14 +206,6 @@ const profile = reactive({
       statusMessage: 'Last updated 2 days ago',
       iconClass: 'bi bi-file-earmark-text-fill',
       iconTheme: 'theme-pdf',
-      url: '#'
-    },
-    {
-      id: 'transcript',
-      name: 'Academic Transcript',
-      statusMessage: 'Verified by Dean',
-      iconClass: 'bi bi-file-earmark-check-fill',
-      iconTheme: 'theme-transcript',
       url: '#'
     }
   ]
@@ -364,7 +336,6 @@ onMounted(async () => {
         const studentData = await res.json()
         profile.name = studentData.name || 'Student'
         profile.email = studentData.email || ''
-        profile.phone = '+1 (555) 123-4567'
         profile.rollNumber = studentData.roll_number || 'N/A'
         profile.branch = studentData.branch || 'N/A'
         profile.yearOfStudy = studentData.year_of_study != null ? `Year ${studentData.year_of_study}` : 'N/A'

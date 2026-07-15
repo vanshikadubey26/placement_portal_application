@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy import func
 from application.database import db
 from application.models import User, Company, Student
 from flask_jwt_extended import create_access_token
@@ -10,14 +11,16 @@ auth_bp = Blueprint('auth', __name__)
 def login():
     from app import bcrypt
     data = request.get_json() or {}
-    identifier = data.get('username') or data.get('email')
+    identifier = (data.get('username') or data.get('email') or '').strip().lower()
     password = data.get('password')
 
     if not identifier or not password:
         return jsonify({"message": "Username/email and password are required."}), 400
 
-    #search user table first
-    user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
+    #search user table first (case-insensitive username/email match)
+    user = User.query.filter(
+        (func.lower(User.username) == identifier) | (func.lower(User.email) == identifier)
+    ).first()
     if user:
         if user.isBlacklisted:
             return jsonify({"message": "Your account has been blacklisted. Please contact the admin."}), 403
@@ -44,7 +47,10 @@ def login():
         }), 200
 
     #seach company table if no matching user is found 
-    company = Company.query.filter((Company.username == identifier) | (Company.email == identifier)).first()
+    #search company table (case-insensitive username/email match)
+    company = Company.query.filter(
+        (func.lower(Company.username) == identifier) | (func.lower(Company.email) == identifier)
+    ).first()
     if company:
         if company.isBlacklisted:
             return jsonify({"message": "Your company account has been blacklisted. Please contact the admin."}), 403

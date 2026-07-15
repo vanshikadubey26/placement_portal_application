@@ -133,3 +133,25 @@ def get_drive_profile(id):
     return jsonify(profile_data), 200
 
 
+# API to check Celery task status
+@common_bp.route('/api/common/task/<task_id>/status', methods=['GET'])
+def check_task_status(task_id):
+    from application.celery_app import celery
+    res = celery.AsyncResult(task_id)
+    if res.state == 'SUCCESS':
+        return jsonify({
+            "status": "SUCCESS",
+            "result": res.result # This returns the filename of the CSV
+        }), 200
+    elif res.state == 'FAILURE':
+        return jsonify({
+            "status": "FAILURE",
+            "error": str(res.info)
+        }), 200
+    else:
+        return jsonify({
+            "status": res.state
+        }), 200
+
+
+

@@ -71,7 +71,22 @@
                   </a>
                   <span v-else>{{ interview.location || '—' }}</span>
                 </td>
-                <td class="text-center">
+                <td class="text-center" style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                    <!-- Reminder Button -->
+                    <button
+                      class="btn-reminder"
+                      :disabled="sendingReminderId === interview.id"
+                      @click="sendReminder(interview)"
+                      style="background: #253a35; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s;"
+                    >
+                      <span v-if="sendingReminderId === interview.id">
+                        <i class="bi bi-hourglass-split"></i> Reminding...
+                      </span>
+                      <span v-else>
+                        <i class="bi bi-bell"></i> Remind
+                      </span>
+                    </button>
+
                     <button
                       v-if="interview.application_status === 'Job Offered'"
                       class="btn-offer-sent"
@@ -181,6 +196,7 @@ const navItems = [
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
   { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Report',       icon: '<i class="bi bi-file-earmark-bar-graph"></i>' },
   { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
@@ -204,6 +220,8 @@ watch(activeNav, (newVal) => {
     router.push('/company/shortlisted')
   } else if (newVal === 'Interviews') {
     router.push('/company/interviews')
+  } else if (newVal === 'Report') {
+    router.push('/company/reports')
   }
 })
 
@@ -222,6 +240,30 @@ const companyProfile = ref({
 const interviews = ref([])
 const loading = ref(false)
 const sendingOfferId = ref(null)
+const sendingReminderId = ref(null)
+
+async function sendReminder(interview) {
+  const token = localStorage.getItem('access_token')
+  sendingReminderId.value = interview.id
+  try {
+    const res = await fetch(`http://localhost:5555/api/company/interview/${interview.id}/remind`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showToast(data.message || 'Reminder sent successfully!')
+    } else {
+      showToast(data.message || 'Failed to send reminder.', 'error')
+    }
+  } catch (err) {
+    showToast('Cannot connect to server to send reminder.', 'error')
+  } finally {
+    sendingReminderId.value = null
+  }
+}
 
 const showScheduleModal = ref(false)
 const toastMessage = ref('')

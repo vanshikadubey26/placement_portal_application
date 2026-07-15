@@ -506,3 +506,170 @@ def send_offer_letter(app_id):
         "application_id": application.id,
         "status": application.status
     }), 200
+
+
+#API to fetch company specific monthly reports statistics
+@company_bp.route('/api/company/reports/monthly', methods=['GET'])
+@jwt_required()
+def get_company_monthly_reports():
+    claims = get_jwt()
+    if claims.get('role') != 'recruiter':
+        return jsonify({"message": "Access forbidden: Recruiters only."}), 403
+
+    identity = get_jwt_identity()
+    if not identity or not identity.startswith("company_"):
+        return jsonify({"message": "Invalid token identity."}), 400
+
+    try:
+        company_id = int(identity.split("_")[1])
+    except (ValueError, IndexError):
+        return jsonify({"message": "Invalid token identity structure."}), 400
+
+    company = Company.query.get(company_id)
+    if not company:
+        return jsonify({"message": "Company not found."}), 404
+
+    import datetime
+    import calendar
+    from application.utils import IST
+
+    month_str = request.args.get('month')
+    if month_str:
+        try:
+            year, month = map(int, month_str.split('-'))
+        except ValueError:
+            return jsonify({"message": "Invalid month format. Use YYYY-MM"}), 400
+    else:
+        now = datetime.datetime.now()
+        year, month = now.year, now.month
+
+    # Start and End range of the month
+    _, last_day = calendar.monthrange(year, month)
+    start_date = datetime.datetime(year, month, 1, 0, 0, 0, tzinfo=IST)
+    end_date = datetime.datetime(year, month, last_day, 23, 59, 59, tzinfo=IST)
+
+    daily_stats = {day: {"drives": 0, "applications": 0, "interviews": 0} for day in range(1, 32)}
+
+    # 1. Drives created by this company
+    drives = Drive.query.filter(
+        Drive.company_id == company.id,
+        Drive.created_at >= start_date,
+        Drive.created_at <= end_date
+    ).all()
+    for d in drives:
+        if d.created_at:
+            day = d.created_at.day
+            if day in daily_stats:
+                daily_stats[day]["drives"] += 1
+
+    # 2. Applications received for this company's drives
+    drive_ids = [d.id for d in Drive.query.filter_by(company_id=company.id).all()]
+    if drive_ids:
+        apps = Application.query.filter(
+            Application.drive_id.in_(drive_ids),
+            Application.created_at >= start_date,
+            Application.created_at <= end_date
+        ).all()
+        for a in apps:
+            if a.created_at:
+                day = a.created_at.day
+                if day in daily_stats:
+                    daily_stats[day]["applications"] += 1
+
+        # 3. Interviews scheduled for those applications
+        app_ids = [a.id for a in Application.query.filter(Application.drive_id.in_(drive_ids)).all()]
+        if app_ids:
+            interviews = Interview.query.filter(
+                Interview.application_id.in_(app_ids),
+                Interview.created_at >= start_date,
+                Interview.created_at <= end_date
+            ).all()
+            for i in interviews:
+                if i.created_at:
+                    day = i.created_at.day
+                    if day in daily_stats:
+                        daily_stats[day]["interviews"] += 1
+
+    labels = [f"Day {day}" for day in range(1, 32)]
+    drives_list = [daily_stats[day]["drives"] for day in range(1, 32)]
+    applications_list = [daily_stats[day]["applications"] for day in range(1, 32)]
+    interviews_list = [daily_stats[day]["interviews"] for day in range(1, 32)]
+
+    return jsonify({
+        "month": f"{year}-{month:02d}",
+        "labels": labels,
+        "drives": drives_list,
+        "applications": applications_list,
+        "interviews": interviews_list
+    }), 200
+
+
+# API to trigger asynchronous CSV export of placements/applications
+@company_bp.route('/api/company/export/placements', methods=['POST'])
+@jwt_required()
+def trigger_company_export():
+    claims = get_jwt()
+    if claims.get('role') != 'recruiter':
+        return jsonify({"message": "Access forbidden: Recruiters only."}), 403
+
+    identity = get_jwt_identity()
+    if not identity or not identity.startswith("company_"):
+        return jsonify({"message": "Invalid token identity."}), 400
+
+    try:
+        company_id = int(identity.split("_")[1])
+    except (ValueError, IndexError):
+        return jsonify({"message": "Invalid token identity structure."}), 400
+
+    company = Company.query.get(company_id)
+    if not company:
+        return jsonify({"message": "Company not found."}), 404
+
+    # Import and trigger the celery task asynchronously
+    from application.tasks import export_company_placements_csv
+    task = export_company_placements_csv.delay(company.id)
+
+    return jsonify({
+        "message": "CSV export has been triggered. You will be notified once complete.",
+        "task_id": task.id
+    }), 202
+
+
+# API to send a reminder for a single scheduled interview
+@company_bp.route('/api/company/interview/<int:interview_id>/remind', methods=['POST'])
+@jwt_required()
+def remind_single_interview(interview_id):
+    claims = get_jwt()
+    if claims.get('role') != 'recruiter':
+        return jsonify({"message": "Access forbidden: Recruiters only."}), 403
+
+    identity = get_jwt_identity()
+    if not identity or not identity.startswith("company_"):
+        return jsonify({"message": "Invalid token identity."}), 400
+
+    try:
+        company_id = int(identity.split("_")[1])
+    except (ValueError, IndexError):
+        return jsonify({"message": "Invalid token identity structure."}), 400
+
+    company = Company.query.get(company_id)
+    if not company:
+        return jsonify({"message": "Company not found."}), 404
+
+    interview = Interview.query.get(interview_id)
+    if not interview:
+        return jsonify({"message": "Interview not found."}), 404
+
+    # Verify that the interview belongs to this company's application
+    app = interview.application
+    if not app or not app.drive or app.drive.company_id != company.id:
+        return jsonify({"message": "Access forbidden: Not your company's interview."}), 403
+
+    # Import and trigger task
+    from application.tasks import send_single_interview_reminder
+    send_single_interview_reminder.delay(interview.id)
+
+    return jsonify({"message": f"Interview reminder task triggered successfully for interview #{interview_id}."}), 200
+
+
+

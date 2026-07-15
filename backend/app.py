@@ -1,3 +1,11 @@
+# Monkey-patch redis Connection to force RESP2 protocol for older Redis server compatibility
+import redis.connection
+original_redis_init = redis.connection.Connection.__init__
+def new_redis_init(self, *args, **kwargs):
+    original_redis_init(self, *args, **kwargs)
+    self.protocol = 2
+redis.connection.Connection.__init__ = new_redis_init
+
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from application.database import db
@@ -28,6 +36,12 @@ CORS(
 #Extensions
 bcrypt = Bcrypt(app)
 db.init_app(app)
+
+# Celery Setup
+from application.celery_app import init_celery
+celery = init_celery(app)
+import application.tasks
+
 
 #JWT Setup
 app.config["JWT_SECRET_KEY"] = "gldslb4jhdfs7834hdscva"

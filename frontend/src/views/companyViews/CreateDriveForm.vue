@@ -156,6 +156,7 @@ const navItems = [
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
   { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Report',       icon: '<i class="bi bi-file-earmark-bar-graph"></i>' },
   { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
@@ -179,6 +180,8 @@ watch(activeNav, (newVal) => {
     router.push('/company/shortlisted')
   } else if (newVal === 'Interviews') {
     router.push('/company/interviews')
+  } else if (newVal === 'Report') {
+    router.push('/company/reports')
   }
 })
 

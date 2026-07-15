@@ -182,19 +182,21 @@ const activeStudent = ref(null)
 
 // Sidebar nav 
 const navItems = [
-  { label: 'Dashboard',        icon: '' },
-  { label: 'Students',         icon: '' },
-  { label: 'Companies',        icon: '' },
-  { label: 'Placement Drives', icon: '' },
-  { label: 'Applications',     icon: '' },
+  { label: 'Dashboard',        icon: '<i class="bi bi-speedometer2"></i>' },
+  { label: 'Students',         icon: '<i class="bi bi-people"></i>' },
+  { label: 'Companies',        icon: '<i class="bi bi-building"></i>' },
+  { label: 'Placement Drives', icon: '<i class="bi bi-megaphone"></i>' },
+  { label: 'Applications',     icon: '<i class="bi bi-file-earmark-text"></i>' },
+  { label: 'Report',           icon: '<i class="bi bi-file-earmark-bar-graph"></i>' }
 ]
 
 watch(activeNav, (val) => {
-  if (val === 'Dashboard')        router.push('/admin/dashboard')
+  if (val === 'Dashboard')             router.push('/admin/dashboard')
   else if (val === 'Students')         router.push('/admin/students')
   else if (val === 'Companies')        router.push('/admin/companies')
   else if (val === 'Placement Drives') router.push('/admin/drives')
   else if (val === 'Applications')     router.push('/admin/applications')
+  else if (val === 'Report')           router.push('/admin/reports')
 })
 
 // Fetch 

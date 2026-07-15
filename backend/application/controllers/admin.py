@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt
-from application.models import User, Company, Drive, Application, Student
+from application.models import User, Company, Drive, Application, Student, Interview
 from application.database import db 
 from application.controllers.redis import get_cache, set_cache, delete_cache
 
@@ -251,6 +251,14 @@ def search_students():
         return jsonify({"message": "Access forbidden: Admins only."}), 403
 
     q = request.args.get('q', '').strip()
+    cache_key = f"admin_search_students_{q}"
+    cached_res = get_cache(cache_key)
+    if cached_res is not None:
+        print(f"CACHE HIT: {cache_key}")
+        return jsonify(cached_res), 200
+    else:
+        print(f"CACHE MISS: {cache_key}")
+
     query = User.query.filter(User.type == 'student')
     if q:
         query = query.outerjoin(Student, User.id == Student.user_id)
@@ -282,6 +290,7 @@ def search_students():
             "isBlacklisted": user.isBlacklisted,
             "created_at": user.created_at.isoformat() if user.created_at else None
         })    
+    set_cache(cache_key, students_list, timeout=60)
     return jsonify(students_list), 200
 
 #API to Search Companies
@@ -292,6 +301,14 @@ def search_companies():
     if claims.get('role') != 'admin':
         return jsonify({"message": "Access forbidden: Admins only."}), 403
     q = request.args.get('q', '').strip()
+    cache_key = f"admin_search_companies_{q}"
+    cached_res = get_cache(cache_key)
+    if cached_res is not None:
+        print(f"CACHE HIT: {cache_key}")
+        return jsonify(cached_res), 200
+    else:
+        print(f"CACHE MISS: {cache_key}")
+
     query = Company.query
     if q:
         query = query.filter(
@@ -311,4 +328,109 @@ def search_companies():
         }
         for c in companies
     ]
+    set_cache(cache_key, companies_list, timeout=60)
     return jsonify(companies_list), 200
+
+
+#API to fetch monthly daily statistics for reports console
+@admin_bp.route('/admin/reports/monthly', methods=['GET'])
+@jwt_required()
+def get_monthly_reports():
+    claims = get_jwt()
+    if claims.get('role') != 'admin':
+        return jsonify({"message": "Access forbidden: Admins only."}), 403
+
+    import datetime
+    import calendar
+
+    month_str = request.args.get('month')
+    if month_str:
+        try:
+            year, month = map(int, month_str.split('-'))
+        except ValueError:
+            return jsonify({"message": "Invalid month format. Use YYYY-MM"}), 400
+    else:
+        now = datetime.datetime.now()
+        year, month = now.year, now.month
+
+    from application.utils import IST
+    # Start and End range of the month
+    _, last_day = calendar.monthrange(year, month)
+    start_date = datetime.datetime(year, month, 1, 0, 0, 0, tzinfo=IST)
+    end_date = datetime.datetime(year, month, last_day, 23, 59, 59, tzinfo=IST)
+
+    daily_stats = {day: {"students": 0, "companies": 0, "drives": 0, "applications": 0, "interviews": 0} for day in range(1, 32)}
+
+    # Students
+    students_data = User.query.filter(
+        User.type == 'student',
+        User.created_at >= start_date,
+        User.created_at <= end_date
+    ).all()
+    for s in students_data:
+        if s.created_at:
+            day = s.created_at.day
+            if day in daily_stats:
+                daily_stats[day]["students"] += 1
+
+    # Companies
+    companies_data = Company.query.filter(
+        Company.created_at >= start_date,
+        Company.created_at <= end_date
+    ).all()
+    for c in companies_data:
+        if c.created_at:
+            day = c.created_at.day
+            if day in daily_stats:
+                daily_stats[day]["companies"] += 1
+
+    # Drives
+    drives_data = Drive.query.filter(
+        Drive.created_at >= start_date,
+        Drive.created_at <= end_date
+    ).all()
+    for d in drives_data:
+        if d.created_at:
+            day = d.created_at.day
+            if day in daily_stats:
+                daily_stats[day]["drives"] += 1
+
+    # Applications
+    apps_data = Application.query.filter(
+        Application.created_at >= start_date,
+        Application.created_at <= end_date
+    ).all()
+    for a in apps_data:
+        if a.created_at:
+            day = a.created_at.day
+            if day in daily_stats:
+                daily_stats[day]["applications"] += 1
+
+    # Interviews
+    interviews_data = Interview.query.filter(
+        Interview.created_at >= start_date,
+        Interview.created_at <= end_date
+    ).all()
+    for i in interviews_data:
+        if i.created_at:
+            day = i.created_at.day
+            if day in daily_stats:
+                daily_stats[day]["interviews"] += 1
+
+    labels = [f"Day {day}" for day in range(1, 32)]
+    students_list = [daily_stats[day]["students"] for day in range(1, 32)]
+    companies_list = [daily_stats[day]["companies"] for day in range(1, 32)]
+    drives_list = [daily_stats[day]["drives"] for day in range(1, 32)]
+    applications_list = [daily_stats[day]["applications"] for day in range(1, 32)]
+    interviews_list = [daily_stats[day]["interviews"] for day in range(1, 32)]
+
+    return jsonify({
+        "month": f"{year}-{month:02d}",
+        "labels": labels,
+        "students": students_list,
+        "companies": companies_list,
+        "drives": drives_list,
+        "applications": applications_list,
+        "interviews": interviews_list
+    }), 200
+

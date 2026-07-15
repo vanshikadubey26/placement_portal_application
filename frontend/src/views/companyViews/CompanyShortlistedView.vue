@@ -144,6 +144,7 @@ const navItems = [
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
   { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Report',       icon: '<i class="bi bi-file-earmark-bar-graph"></i>' },
   { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
@@ -164,7 +165,8 @@ watch(activeNav, (newVal) => {
     Drives: '/company/drives',
     Applications: '/company/applications',
     Shortlisted: '/company/shortlisted',
-    Interviews: '/company/interviews'
+    Interviews: '/company/interviews',
+    Report: '/company/reports'
   }
   if (routes[newVal]) router.push(routes[newVal])
 })

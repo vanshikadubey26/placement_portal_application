@@ -1,6 +1,5 @@
 import os
 
-
 class Config:
    SECRET_KEY = os.environ.get('SECRET_KEY', 'hbfguhiefihdliuj9eui56euijw1256a')
    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///ppa.sqlite3')
@@ -12,5 +11,6 @@ class Config:
    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'manager@123')
    ADMIN_NAME = os.environ.get('ADMIN_NAME', 'Vanshika')
 
-
-
+   # Celery & Redis Configuration
+   CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+   CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')

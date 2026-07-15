@@ -17,16 +17,21 @@
           <h1 class="topbar-title">My Applications</h1>
           <p class="topbar-subtitle">Track your application history and scheduled interviews</p>
         </div>
-        <div class="search-box">
-          <i class="bi bi-search search-icon"></i>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search by drive or company..."
-            class="search-input"
-          />
-          <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
-            <i class="bi bi-x"></i>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <div class="search-box">
+            <i class="bi bi-search search-icon"></i>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search by drive or company..."
+              class="search-input"
+            />
+            <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          <button @click="triggerExport" class="btn-export" style="background: #2d6b5e; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13.5px; height: 42px;">
+            <i class="bi bi-file-earmark-arrow-down"></i> Export Applications (CSV)
           </button>
         </div>
       </header>
@@ -348,6 +353,57 @@ function showToast(msg, type = 'success') {
   toastMessage.value = msg
   toastType.value = type
   setTimeout(() => { toastMessage.value = '' }, 3500)
+}
+
+const triggerExport = async () => {
+  const token = localStorage.getItem('access_token')
+  if (!token) return
+  try {
+    const res = await fetch('http://localhost:5555/api/student/export/applications', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showToast(data.message || 'Export triggered successfully!')
+      if (data.task_id) {
+        pollExportStatus(data.task_id)
+      }
+    } else {
+      showToast(data.message || 'Failed to trigger export.', 'error')
+    }
+  } catch (err) {
+    showToast('Cannot connect to server to trigger export.', 'error')
+  }
+}
+
+const pollExportStatus = (taskId) => {
+  const interval = setInterval(async () => {
+    try {
+      const res = await fetch(`http://localhost:5555/api/common/task/${taskId}/status`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.status === 'SUCCESS') {
+          clearInterval(interval)
+          showToast('Applications export ready! Downloading now...')
+          
+          // Trigger browser file download
+          const link = document.createElement('a')
+          link.href = `http://localhost:5555/static/exports/${data.result}`
+          link.setAttribute('download', data.result)
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        } else if (data.status === 'FAILURE') {
+          clearInterval(interval)
+          showToast('Failed to export CSV file.', 'error')
+        }
+      }
+    } catch (err) {
+      clearInterval(interval)
+      console.error(err)
+    }
+  }, 1500)
 }
 
 function handleLogout() {

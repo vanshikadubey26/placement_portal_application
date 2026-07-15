@@ -7,11 +7,13 @@ import AllStudentView from '@/views/adminViews/AllStudentView.vue'
 import AllCompanyView from '@/views/adminViews/AllCompanyView.vue'
 import AllDrivesView from '@/views/adminViews/AllDrivesView.vue'
 import AllApplicationsView from '@/views/adminViews/AllApplicationsView.vue'
+import AdminReportsView from '@/views/adminViews/AdminReportsView.vue'
 import CompanyDashView from '@/views/companyViews/CompanyDashView.vue'
 import CompanyProfileEditView from '@/views/companyViews/CompanyProfileEditView.vue'
 import CompanyDrivesView from '@/views/companyViews/CompanyDrivesView.vue'
 import CompanyApplicationsView from '@/views/companyViews/CompanyApplicationsView.vue'
 import CompanyInterviewsView from '@/views/companyViews/CompanyInterviewsView.vue'
+import CompanyReportsView from '@/views/companyViews/CompanyReportsView.vue'
 import CreateDriveForm from '@/views/companyViews/CreateDriveForm.vue'
 import CompanyShortlistedView from '@/views/companyViews/CompanyShortlistedView.vue'
 import StudentDashView from '@/views/studentViews/StudentDashView.vue'
@@ -70,6 +72,11 @@ const router = createRouter({
       component: AllApplicationsView,
     },
     {
+      path: '/admin/reports',
+      name: 'admin-reports',
+      component: AdminReportsView,
+    },
+    {
       path: '/company/dashboard',
       name: 'company-dashboard',
       component: CompanyDashView,
@@ -83,6 +90,11 @@ const router = createRouter({
       path: '/company/drives',
       name: 'company-drives',
       component: CompanyDrivesView,
+    },
+    {
+      path: '/company/reports',
+      name: 'company-reports',
+      component: CompanyReportsView,
     },
     {
       path: '/company/drives/create',

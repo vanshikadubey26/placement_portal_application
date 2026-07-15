@@ -39,7 +39,6 @@ import { useRouter } from 'vue-router'
 import Sidebar            from '@/components/Sidebar.vue'
 import AdminTopbar        from '@/components/admin/AdminTopbar.vue'
 import StatCardsGrid      from '@/components/admin/StatCardsGrid.vue'
-// import PendingApprovals   from '@/components/admin/PendingApprovals.vue'
 
 const router = useRouter()
 
@@ -57,6 +56,8 @@ watch(activeNav, (newVal) => {
     router.push('/admin/applications')
   } else if (newVal === 'Dashboard') {
     router.push('/admin/dashboard')
+  } else if (newVal === 'Report') {
+    router.push('/admin/reports')
   }
 })
 const globalSearch  = ref('')
@@ -64,11 +65,12 @@ const companySearch = ref('')
 const studentSearch = ref('')
 
 const navItems = [
-  { label: 'Dashboard',        icon: '' },
-  { label: 'Students',         icon: '' },
-  { label: 'Companies',        icon: '' },
-  { label: 'Placement Drives', icon: '' },
-  { label: 'Applications',     icon: '' },
+  { label: 'Dashboard',        icon: '<i class="bi bi-speedometer2"></i>' },
+  { label: 'Students',         icon: '<i class="bi bi-people"></i>' },
+  { label: 'Companies',        icon: '<i class="bi bi-building"></i>' },
+  { label: 'Placement Drives', icon: '<i class="bi bi-megaphone"></i>' },
+  { label: 'Applications',     icon: '<i class="bi bi-file-earmark-text"></i>' },
+  { label: 'Report',           icon: '<i class="bi bi-file-earmark-bar-graph"></i>' }
 ]
 
 // Data 
@@ -213,7 +215,6 @@ async function handleLogout() {
   gap: 20px;
 }
 
-/* Post drive btn styled for placement in slot */
 .post-drive-btn {
   display: flex;
   align-items: center;

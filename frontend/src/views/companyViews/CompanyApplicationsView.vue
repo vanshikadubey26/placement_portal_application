@@ -13,11 +13,14 @@
     <!-- Main Content -->
     <main class="main-content">
       <!-- Top Bar -->
-      <header class="topbar">
+      <header class="topbar" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
         <div class="topbar-title-group">
           <h1 class="topbar-title">Received Applications</h1>
           <p class="topbar-subtitle">LaunchPad Corporate Dashboard</p>
         </div>
+        <button @click="triggerExport" class="btn-export" style="background: #b94a3b; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13.5px; height: 42px;">
+          <i class="bi bi-file-earmark-arrow-down"></i> Export Placements (CSV)
+        </button>
       </header>
 
       <!-- Toast Alerts -->
@@ -130,6 +133,7 @@ const navItems = [
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
   { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Report',       icon: '<i class="bi bi-file-earmark-bar-graph"></i>' },
   { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
@@ -153,6 +157,8 @@ watch(activeNav, (newVal) => {
     router.push('/company/shortlisted')
   } else if (newVal === 'Interviews') {
     router.push('/company/interviews')
+  } else if (newVal === 'Report') {
+    router.push('/company/reports')
   }
 })
 
@@ -220,6 +226,57 @@ function showToast(msg, type = 'success') {
   setTimeout(() => {
     toastMessage.value = ''
   }, 3500)
+}
+
+const triggerExport = async () => {
+  const token = localStorage.getItem('access_token')
+  if (!token) return
+  try {
+    const res = await fetch('http://localhost:5555/api/company/export/placements', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showToast(data.message || 'Export triggered successfully!')
+      if (data.task_id) {
+        pollExportStatus(data.task_id)
+      }
+    } else {
+      showToast(data.message || 'Failed to trigger export.', 'error')
+    }
+  } catch (err) {
+    showToast('Cannot connect to server to trigger export.', 'error')
+  }
+}
+
+const pollExportStatus = (taskId) => {
+  const interval = setInterval(async () => {
+    try {
+      const res = await fetch(`http://localhost:5555/api/common/task/${taskId}/status`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.status === 'SUCCESS') {
+          clearInterval(interval)
+          showToast('Placement history export ready! Downloading now...')
+          
+          // Trigger browser file download
+          const link = document.createElement('a')
+          link.href = `http://localhost:5555/static/exports/${data.result}`
+          link.setAttribute('download', data.result)
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        } else if (data.status === 'FAILURE') {
+          clearInterval(interval)
+          showToast('Failed to export CSV file.', 'error')
+        }
+      }
+    } catch (err) {
+      clearInterval(interval)
+      console.error(err)
+    }
+  }, 1500)
 }
 
 function getStatusClass(status) {

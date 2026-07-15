@@ -425,3 +425,28 @@ def accept_offer(app_id):
         return jsonify({"message": "Failed to accept offer.", "error": str(e)}), 500
         
     return jsonify({"message": "Offer accepted successfully!", "status": app.status}), 200
+
+
+# API to trigger asynchronous CSV export of applications
+@student_bp.route('/api/student/export/applications', methods=['POST'])
+@jwt_required()
+def trigger_student_export():
+    claims = get_jwt()
+    if claims.get('role') != 'student':
+        return jsonify({"message": "Access forbidden: Students only."}), 403
+        
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    student = user.student
+    if not student:
+        return jsonify({"message": "Student profile not found."}), 404
+        
+    # Import and trigger the celery task asynchronously
+    from application.tasks import export_student_applications_csv
+    task = export_student_applications_csv.delay(student.id)
+    
+    return jsonify({
+        "message": "CSV export has been triggered. You will be notified once complete.",
+        "task_id": task.id
+    }), 202
+

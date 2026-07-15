@@ -5,6 +5,7 @@ from flask_jwt_extended import create_access_token
 
 auth_bp = Blueprint('auth', __name__)
 
+#API for login 
 @auth_bp.route('/api/auth/login', methods=['POST'])
 def login():
     from app import bcrypt
@@ -15,7 +16,7 @@ def login():
     if not identifier or not password:
         return jsonify({"message": "Username/email and password are required."}), 400
 
-    # Check User table first
+    #search user table first
     user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
     if user:
         if user.isBlacklisted:
@@ -42,7 +43,7 @@ def login():
             }
         }), 200
 
-    # Check Company table
+    #seach company table if no matching user is found 
     company = Company.query.filter((Company.username == identifier) | (Company.email == identifier)).first()
     if company:
         if company.isBlacklisted:
@@ -51,12 +52,12 @@ def login():
         if not bcrypt.check_password_hash(company.password, password):
             return jsonify({"message": "Incorrect password. Please try again."}), 401
         
-        if not company.approved:
+        if not company.approved: #only approved companies
             return jsonify({"message": "Your company account is pending approval by the admin."}), 403
         
         access_token = create_access_token(
             identity=f"company_{company.id}",
-            additional_claims={"role": "recruiter"}
+            additional_claims={"role": "recruiter"} #if all validation passes, a JWT token is created
         )
         return jsonify({
             "access_token": access_token,
@@ -69,10 +70,10 @@ def login():
             }
         }), 200
 
-    # No matching user or company found
+    #if neither the user table nor the company table has any record
     return jsonify({"message": "No account found with that username or email."}), 401
 
-
+#API for student signup
 @auth_bp.route('/api/auth/signup/student', methods=['POST'])
 def signup_student():
     from app import bcrypt
@@ -120,7 +121,7 @@ def signup_student():
         db.session.rollback()
         return jsonify({"message": "An error occurred during signup.", "error": str(e)}), 500
 
-
+#API for company signup
 @auth_bp.route('/api/auth/signup/company', methods=['POST'])
 def signup_company():
     from app import bcrypt
@@ -168,7 +169,7 @@ def signup_company():
         db.session.rollback()
         return jsonify({"message": "An error occurred during company registration.", "error": str(e)}), 500
 
-
+#API for logout
 @auth_bp.route('/api/auth/logout', methods=['POST'])
 def logout():
     return jsonify({"message": "Logout successful."}), 200

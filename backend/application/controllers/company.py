@@ -64,11 +64,7 @@ def update_company_profile():
     data = request.get_json() or {}
 
     # Validations corresponding to String(150) columns
-    string_fields = ['industry', 'scale', 'headOffice', 'website', 'logo', 'pocName', 'pocEmail']
-    for field in string_fields:
-        val = data.get(field)
-        if val and len(str(val)) > 150:
-            return jsonify({"message": f"Field '{field}' exceeds 150 characters limit."}), 400
+
 
     company.description = data.get('description', company.description)
     company.industry = data.get('industry', company.industry)

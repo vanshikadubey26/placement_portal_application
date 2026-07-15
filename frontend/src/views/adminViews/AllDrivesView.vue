@@ -236,7 +236,7 @@ const showModal = ref(false)
 const selectedDrive = ref(null)
 const drives = ref([])
 
-// ── Sidebar nav ───────────────────────────────
+//Sidebar nav
 const navItems = [
   { label: 'Dashboard',        icon: '' },
   { label: 'Students',         icon: '' },
@@ -253,7 +253,7 @@ watch(activeNav, (val) => {
   else if (val === 'Applications')     router.push('/admin/applications')
 })
 
-// ── Fetch ─────────────────────────────────────
+//Fetch
 onMounted(async () => {
   const token = localStorage.getItem('access_token')
   const res = await fetch('http://localhost:5555/admin/all-drives', {
@@ -262,7 +262,7 @@ onMounted(async () => {
   if (res.ok) drives.value = await res.json()
 })
 
-// ── Computed ──────────────────────────────────
+//Computed
 const filteredDrives = computed(() => {
   if (!searchQuery.value) return drives.value
   const q = searchQuery.value.toLowerCase()
@@ -289,7 +289,7 @@ const completedDrivesCount = computed(() =>
   drives.value.filter(d => isExpired(d.deadline)).length
 )
 
-// ── Methods ───────────────────────────────────
+//Methods
 function viewDetails(drive) {
   router.push(`/drive/profile/${drive.id}`)
 }
@@ -346,7 +346,7 @@ async function handleLogout() {
 
 * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
 
-/* ─── Layout ─────────────────── */
+/*Layout*/
 .admin-layout { display: flex; height: 100vh; background: #f5f5f0; overflow: hidden; }
 
 .main-content {
@@ -358,7 +358,7 @@ async function handleLogout() {
   gap: 22px;
 }
 
-/* ─── Stat Cards ─────────────── */
+/*Stat Cards*/
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -394,7 +394,7 @@ async function handleLogout() {
 .stat-label { font-size: 12.5px; color: #8a9e9a; font-weight: 500; margin-bottom: 4px; }
 .stat-value { font-size: 28px; font-weight: 700; color: #1a2e28; letter-spacing: -.5px; }
 
-/* ─── Card / Table ───────────── */
+/*Card / Table*/
 .card { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .table-card { display: flex; flex-direction: column; }
 
@@ -488,12 +488,12 @@ async function handleLogout() {
   border-color: #f0a3a3;
 }
 
-/* ─── Empty state ────────────── */
+/*Empty state*/
 .empty-state { text-align: center; padding: 40px 0 !important; }
 .empty-title { font-size: 15px; font-weight: 700; color: #1a2e28; }
 .empty-desc { font-size: 12.5px; color: #8a9e9a; margin-top: 6px; }
 
-/* ─── Modal ──────────────────── */
+/*Modal*/
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,.35);

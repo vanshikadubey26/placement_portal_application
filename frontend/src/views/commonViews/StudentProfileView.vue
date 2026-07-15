@@ -25,7 +25,7 @@
       <!-- Profile Container -->
       <div class="profile-container">
         
-        <!-- ─── PROFILE HEADER CARD ─── -->
+        <!--PROFILE HEADER CARD-->
         <div class="header-card">
           <div class="header-left">
             <div class="avatar-wrapper">
@@ -57,10 +57,10 @@
           </div>
         </div>
 
-        <!-- ─── MAIN CONTENT BODY (2 COLUMNS) ─── -->
+        <!--MAIN CONTENT BODY-->
         <div class="profile-body-grid">
           
-          <!-- LEFT COLUMN: Personal Info & Academic Details -->
+          <!--Personal Info & Academic Details -->
           <div class="body-col-left">
             
             <!-- Personal Information Card -->
@@ -131,7 +131,7 @@
 
           </div>
 
-          <!-- RIGHT COLUMN: Documents & Core Competencies -->
+          <!-- Documents & Core Competencies -->
           <div class="body-col-right">
             
             <!-- Documents Card -->
@@ -335,7 +335,6 @@ onMounted(async () => {
   if (userJson) {
     try {
       currentUser.value = JSON.parse(userJson)
-      // Set active nav highlight
       if (currentUser.value.role === 'admin') {
         activeNav.value = 'Students'
       } else if (currentUser.value.role === 'student') {
@@ -348,7 +347,7 @@ onMounted(async () => {
     }
   }
 
-  // Set isInitialized on next tick to avoid redirection loop during setup
+  
   setTimeout(() => {
     isInitialized = true
   }, 150)
@@ -502,9 +501,7 @@ const viewDoc = (docName) => {
   font-weight: 500;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── HEADER CARD STYLING ───
-──────────────────────────────────────────────────────── */
+
 .header-card {
   background: #ffffff;
   border-radius: 16px;
@@ -626,9 +623,7 @@ const viewDoc = (docName) => {
 }
 
 
-/* ────────────────────────────────────────────────────────
-   ─── MAIN SECTION BODY STYLING ───
-──────────────────────────────────────────────────────── */
+
 .profile-body-grid {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
@@ -668,9 +663,7 @@ const viewDoc = (docName) => {
   margin: 0;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── PERSONAL INFORMATION CARD ───
-──────────────────────────────────────────────────────── */
+
 .info-rows-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -696,9 +689,7 @@ const viewDoc = (docName) => {
   color: #27231E;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── ACADEMIC DETAILS CARD ───
-──────────────────────────────────────────────────────── */
+
 .academic-blocks-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -747,9 +738,7 @@ const viewDoc = (docName) => {
   color: #8c8985;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── DOCUMENTS CARD STYLING ───
-──────────────────────────────────────────────────────── */
+
 .documents-list {
   display: flex;
   flex-direction: column;
@@ -844,9 +833,6 @@ const viewDoc = (docName) => {
   color: #1b443b;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── CORE COMPETENCIES CARD ───
-──────────────────────────────────────────────────────── */
 .competencies-container {
   display: flex;
   flex-wrap: wrap;
@@ -870,9 +856,7 @@ const viewDoc = (docName) => {
   transform: scale(1.02);
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── RESPONSIVE RULES ───
-──────────────────────────────────────────────────────── */
+
 @media (max-width: 992px) {
   .profile-body-grid {
     grid-template-columns: 1fr;

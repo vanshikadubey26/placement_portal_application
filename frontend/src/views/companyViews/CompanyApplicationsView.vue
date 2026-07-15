@@ -329,7 +329,7 @@ async function handleLogout() {
   gap: 22px;
 }
 
-/* ── Top Bar ───────────────────── */
+/* Top Bar*/
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -386,7 +386,7 @@ async function handleLogout() {
   color: #8a9e9a;
 }
 
-/* ── Toast Alerts ──────────────── */
+/* Toast Alerts */
 .toast-alert {
   position: fixed;
   top: 24px;
@@ -410,7 +410,7 @@ async function handleLogout() {
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* ── Cards & Tables ────────────── */
+/*Cards & Tables */
 .card {
   background: #fff;
   border-radius: 14px;
@@ -509,7 +509,7 @@ async function handleLogout() {
   color: #8a9e9a;
 }
 
-/* ── Badges ────────────────────── */
+/*Badges*/
 .status-badge {
   font-size: 11px;
   font-weight: 600;
@@ -576,7 +576,7 @@ async function handleLogout() {
 .text-muted { color: #8a9e9a; }
 .text-sm { font-size: 12.5px; }
 
-/* ── Rejection Modal Styles ────── */
+/*Rejection Modal Styles*/
 .modal-overlay {
   position: fixed;
   inset: 0;

@@ -6,6 +6,7 @@ from datetime import datetime
 
 student_bp = Blueprint('student', __name__)
 
+#API to get student profile status
 @student_bp.route('/api/student/profile/status', methods=['GET'])
 @jwt_required()
 def get_student_profile_status():
@@ -32,6 +33,7 @@ def get_student_profile_status():
         } if student else None
     }), 200
 
+#API to fetch student profile
 @student_bp.route('/api/student/profile', methods=['GET'])
 @jwt_required()
 def get_student_profile():
@@ -56,6 +58,7 @@ def get_student_profile():
         "resume": student.resume if student else ""
     }), 200
 
+#API to update student profile
 @student_bp.route('/api/student/profile', methods=['PUT'])
 @jwt_required()
 def update_student_profile():
@@ -70,11 +73,9 @@ def update_student_profile():
 
     data = request.get_json() or {}
     
-    # Update User info
     user.name = data.get('name', user.name)
     user.email = data.get('email', user.email)
 
-    # Update/Create Student info
     student = user.student
     if not student:
         student = Student(user_id=user.id)
@@ -82,7 +83,6 @@ def update_student_profile():
 
     roll_number = data.get('roll_number')
     if roll_number:
-        # Check uniqueness
         existing = Student.query.filter_by(roll_number=roll_number).first()
         if existing and existing.user_id != user.id:
             return jsonify({"message": "Roll number already exists."}), 400
@@ -125,6 +125,7 @@ def update_student_profile():
         }
     }), 200
 
+#API to setup student profile
 @student_bp.route('/api/student/profile/setup', methods=['POST'])
 @jwt_required()
 def setup_student_profile():
@@ -147,7 +148,6 @@ def setup_student_profile():
     if not all([roll_number, branch, year_of_study, cgpa]):
         return jsonify({"message": "Roll number, branch, year of study, and CGPA are required."}), 400
     
-    # Check if roll number already exists for another student
     existing = Student.query.filter_by(roll_number=roll_number).first()
     if existing and existing.user_id != user_id:
         return jsonify({"message": "Roll number already exists."}), 400
@@ -172,6 +172,7 @@ def setup_student_profile():
         
     return jsonify({"message": "Profile updated successfully.", "student_id": student.id}), 200
 
+#API to fetch list of drives eligible for student
 @student_bp.route('/api/student/drives', methods=['GET'])
 @jwt_required()
 def get_eligible_drives():
@@ -182,8 +183,7 @@ def get_eligible_drives():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
     student = user.student
-    
-    # Approved drives only
+
     drives = Drive.query.filter_by(approved=True, status='Hiring').all()
     
     drives_list = []
@@ -219,6 +219,7 @@ def get_eligible_drives():
         
     return jsonify(drives_list), 200
 
+#API to fetch approved drives for student
 @student_bp.route('/api/student/approved-drives', methods=['GET'])
 @jwt_required()
 def get_approved_drives():
@@ -230,7 +231,6 @@ def get_approved_drives():
     user = User.query.get(user_id)
     student = user.student
     
-    # Approved drives only
     drives = Drive.query.filter_by(approved=True).all()
     
     drives_list = []
@@ -282,6 +282,7 @@ def get_approved_drives():
         "closedCount": closed_count
     }), 200
 
+#API for student to apply to a drive
 @student_bp.route('/api/student/apply/<int:drive_id>', methods=['POST'])
 @jwt_required()
 def apply_to_drive(drive_id):
@@ -301,17 +302,13 @@ def apply_to_drive(drive_id):
     drive = Drive.query.get(drive_id)
     if not drive or not drive.approved:
         return jsonify({"message": "Placement drive is not active or not found."}), 404
-        
-    # Check deadline
+    
     if drive.deadline and datetime.now() > drive.deadline:
         return jsonify({"message": "The application deadline for this drive has passed."}), 400
-        
-    # Check if already applied
+     
     existing = Application.query.filter_by(student_id=student.id, drive_id=drive_id).first()
     if existing:
         return jsonify({"message": "You have already applied to this drive."}), 400
-        
-    # Eligibility checks removed (verified manually)
 
     new_app = Application(
         student_id=student.id,
@@ -328,6 +325,7 @@ def apply_to_drive(drive_id):
         
     return jsonify({"message": "Successfully applied to placement drive!"}), 201
 
+#API for student applications
 @student_bp.route('/api/student/applications', methods=['GET'])
 @jwt_required()
 def get_student_applications():
@@ -358,6 +356,7 @@ def get_student_applications():
         
     return jsonify(apps_list), 200
 
+#API for student interviews
 @student_bp.route('/api/student/interviews', methods=['GET'])
 @jwt_required()
 def get_student_interviews():
@@ -397,6 +396,7 @@ def get_student_interviews():
         
     return jsonify(interviews_list), 200
 
+#API for student to accept offer
 @student_bp.route('/api/student/application/<int:app_id>/accept-offer', methods=['POST'])
 @jwt_required()
 def accept_offer(app_id):

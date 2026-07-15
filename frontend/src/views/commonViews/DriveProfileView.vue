@@ -25,11 +25,11 @@
       <!-- Profile Container -->
       <div class="profile-container">
         
-        <!-- ─── PROFILE HEADER CARD ─── -->
+        <!-- PROFILE HEADER CARD -->
         <div class="header-card">
           <div class="header-left">
             <div class="avatar-wrapper">
-              <!-- Megaphone Fallback Icon -->
+              
               <div class="drive-logo-fallback">
                 <i class="bi bi-megaphone"></i>
               </div>
@@ -77,10 +77,10 @@
           </div>
         </div>
 
-        <!-- ─── MAIN CONTENT BODY (2 COLUMNS) ─── -->
+        <!--MAIN CONTENT BODY-->
         <div class="profile-body-grid">
           
-          <!-- LEFT COLUMN: Criteria & Academic Details, Job Details -->
+          <!--Criteria & Academic Details, Job Details -->
           <div class="body-col-left">
             
             <!-- Criteria & Eligibility Card -->
@@ -148,7 +148,7 @@
 
           </div>
 
-          <!-- RIGHT COLUMN: About and Skills -->
+          <!--About and Skills -->
           <div class="body-col-right">
             
             <!-- Description Card -->
@@ -482,9 +482,7 @@ const formatDate = (dateStr) => {
   font-weight: 500;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── HEADER CARD STYLING ───
-──────────────────────────────────────────────────────── */
+
 .header-card {
   background: #ffffff;
   border-radius: 16px;
@@ -620,9 +618,7 @@ const formatDate = (dateStr) => {
   transform: translateY(0);
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── MAIN SECTION BODY STYLING ───
-──────────────────────────────────────────────────────── */
+
 .profile-body-grid {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
@@ -662,9 +658,7 @@ const formatDate = (dateStr) => {
   margin: 0;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── CRITERIA & PERSONAL DETAILS CARD ───
-──────────────────────────────────────────────────────── */
+
 .info-rows-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -738,9 +732,7 @@ const formatDate = (dateStr) => {
   font-weight: 500;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── RESPONSIVE RULES ───
-──────────────────────────────────────────────────────── */
+
 @media (max-width: 992px) {
   .profile-body-grid {
     grid-template-columns: 1fr;

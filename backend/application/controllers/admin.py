@@ -5,11 +5,10 @@ from application.database import db
 
 admin_bp = Blueprint('admin', __name__)
 
-# Fetch all students
+# API to fetch all students
 @admin_bp.route('/admin/all-students', methods=['GET'])
 @jwt_required()
 def get_all_students():
-    # role verification
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({"message": "Access forbidden: Admins only."}), 403
@@ -36,7 +35,8 @@ def get_all_students():
         
     return jsonify(students_list), 200
 
-# Fetch all companies
+
+#API to fetch all companies
 @admin_bp.route('/admin/all-companies', methods=['GET'])
 @jwt_required()
 def get_all_companies():
@@ -59,7 +59,7 @@ def get_all_companies():
 
     return jsonify(companies_list), 200
 
-# Fetch all drives
+#API to fetch all drives
 @admin_bp.route('/admin/all-drives', methods=['GET'])
 @jwt_required()
 def get_all_drives():
@@ -95,7 +95,7 @@ def get_all_drives():
 
     return jsonify(drives_list), 200
 
-# Fetch all applications
+#API to fetch all applications
 @admin_bp.route('/admin/all-applications', methods=['GET'])
 @jwt_required()
 def get_all_applications():
@@ -129,7 +129,7 @@ def get_all_applications():
 
     return jsonify(result), 200
 
-# Fetch stats for admin dashboard
+#API to fetch stats for admin dashboard
 @admin_bp.route('/admin/stats', methods=['GET'])
 @jwt_required()
 def get_admin_stats():
@@ -149,7 +149,7 @@ def get_admin_stats():
         "total_applications": total_applications
     }), 200
 
-# Stats for Admin Dashboard
+# API to fetch stats for Admin Dashboard
 @admin_bp.route('/admin/student/blacklist/<int:user_id>', methods=['PUT'])
 @jwt_required()
 def student_blacklist(user_id):
@@ -166,7 +166,7 @@ def student_blacklist(user_id):
 
     return jsonify({"message": f"User {user.name} {'blacklisted' if user.isBlacklisted else 'unblacklisted'} successfully."}), 200
 
-# Blacklist Company
+#API to Blacklist Company
 @admin_bp.route('/admin/company/blacklist/<int:company_id>', methods=['PUT'])
 @jwt_required()
 def company_blacklist(company_id):
@@ -183,7 +183,7 @@ def company_blacklist(company_id):
 
     return jsonify({"message": f"Company {company.name} {'blacklisted' if company.isBlacklisted else 'unblacklisted'} successfully."}), 200
 
-# Approve Company
+#API to Approve Company
 @admin_bp.route('/admin/company/approve/<int:company_id>', methods=['PUT'])
 @jwt_required()
 def company_approve(company_id):
@@ -200,7 +200,7 @@ def company_approve(company_id):
 
     return jsonify({"message": f"Company {company.name} {'approved' if company.approved else 'unapproved'} successfully."}), 200
 
-# Approve Drive
+#API to Approve Drive
 @admin_bp.route('/admin/drive/approve/<int:drive_id>', methods=['PUT'])
 @jwt_required()
 def drive_approve(drive_id):
@@ -220,7 +220,7 @@ def drive_approve(drive_id):
         "approved": drive.approved
     }), 200
     
-# Search Students
+#API to Search Students
 @admin_bp.route('/admin/students/search', methods=['GET'])
 @jwt_required()
 def search_students():
@@ -229,9 +229,7 @@ def search_students():
         return jsonify({"message": "Access forbidden: Admins only."}), 403
 
     q = request.args.get('q', '').strip()
-    
     query = User.query.filter(User.type == 'student')
-    
     if q:
         query = query.outerjoin(Student, User.id == Student.user_id)
         id_filter = False
@@ -247,9 +245,8 @@ def search_students():
     
     users = query.all()
     students_list = []
-    
     for user in users:
-        s = user.student
+        s = user.student #retrieve related student object from the User object using SQLAlchemy relationship
         students_list.append({
             "id": s.id if s else None,
             "user_id": user.id,
@@ -262,28 +259,24 @@ def search_students():
             "resume": s.resume if s else None,
             "isBlacklisted": user.isBlacklisted,
             "created_at": user.created_at.isoformat() if user.created_at else None
-        })
-        
+        })    
     return jsonify(students_list), 200
 
-# Search Companies
+#API to Search Companies
 @admin_bp.route('/admin/companies/search', methods=['GET'])
 @jwt_required()
 def search_companies():
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({"message": "Access forbidden: Admins only."}), 403
-
     q = request.args.get('q', '').strip()
-    
     query = Company.query
     if q:
         query = query.filter(
-            Company.name.ilike(f"%{q}%") |
-            Company.email.ilike(f"%{q}%") |
+            Company.name.ilike(f"%{q}%") | #search by company name, email, OR industry (case insensitive)
+            Company.email.ilike(f"%{q}%") | 
             Company.industry.ilike(f"%{q}%")
-        )
-        
+        )    
     companies = query.all()
     companies_list = [
         {
@@ -296,5 +289,4 @@ def search_companies():
         }
         for c in companies
     ]
-    
     return jsonify(companies_list), 200

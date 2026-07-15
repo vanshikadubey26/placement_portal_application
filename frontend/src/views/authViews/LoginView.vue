@@ -69,14 +69,14 @@ async function handleLogin() {
 
     <div class="lp-container text-center">
 
-      <!-- ── Brand Header ── -->
+      <!-- Brand Header -->
       <div class="lp-brand mb-4">
         <img src="/Only_logo.png" alt="LaunchPad Logo" class="lp-logo mb-3">
         <h1 class="lp-brand-name">Launch Pad</h1>
         <p class="lp-tagline">Elevate Your Career Trajectory</p>
       </div>
 
-      <!-- ── Card ── -->
+      <!-- Card -->
       <div class="lp-card">
         <h2 class="lp-card-title mb-4">Login to Portal</h2>
 
@@ -183,9 +183,8 @@ async function handleLogin() {
 </template>
 
 <style scoped>
-/* ──────────────────────────────
-   Brand Colour Aliases (scoped)
-────────────────────────────── */
+
+
 .lp-login-page {
   --lp-eerie:     #27231E;
   --lp-slate:     #3A5253;
@@ -198,14 +197,14 @@ async function handleLogin() {
   min-height: 100vh;
 }
 
-/* ── Page Container ── */
+/* Page Container */
 .lp-container {
   width: 100%;
   max-width: 520px;
   padding: 2rem 1rem;
 }
 
-/* ── Brand Header ── */
+/* Brand Header */
 .lp-logo {
   width: 72px;
   height: 72px;
@@ -229,7 +228,7 @@ async function handleLogin() {
   margin-bottom: 0;
 }
 
-/* ── Card ── */
+/* Card */
 .lp-card {
   background: #ffffff;
   border-radius: 20px;
@@ -248,7 +247,7 @@ async function handleLogin() {
   letter-spacing: -0.3px;
 }
 
-/* ── Labels ── */
+/* Labels */
 .lp-label {
   display: block;
   font-size: 0.82rem;
@@ -265,7 +264,7 @@ async function handleLogin() {
   user-select: none;
 }
 
-/* ── Input Group ── */
+/* Input Group */
 .lp-input-group {
   position: relative;
   display: flex;
@@ -308,7 +307,7 @@ async function handleLogin() {
   color: #b0aba6;
 }
 
-/* ── Password Toggle Button ── */
+/* Password Toggle Button */
 .lp-password-toggle {
   position: absolute;
   right: 0.8rem;
@@ -326,7 +325,7 @@ async function handleLogin() {
   color: var(--lp-sienna);
 }
 
-/* ── Checkbox ── */
+/* Checkbox */
 .lp-checkbox {
   width: 16px;
   height: 16px;
@@ -336,7 +335,7 @@ async function handleLogin() {
   border-radius: 4px;
 }
 
-/* ── Primary Button ── */
+/* Primary Button */
 .lp-btn-primary {
   display: block;
   width: 100%;
@@ -370,7 +369,7 @@ async function handleLogin() {
   cursor: not-allowed;
 }
 
-/* ── Outline Button ── */
+/* Outline Button */
 .lp-btn-outline {
   padding: 0.6rem 1rem;
   background: transparent;
@@ -390,14 +389,14 @@ async function handleLogin() {
   background: rgba(129, 178, 154, 0.08);
 }
 
-/* ── Divider ── */
+/* Divider */
 .lp-divider {
   height: 1px;
   background: #ede8e5;
   border: none;
 }
 
-/* ── Sign-up Prompt ── */
+/* Sign-up Prompt */
 .lp-signup-prompt {
   font-size: 0.85rem;
   color: var(--lp-eerie);
@@ -405,7 +404,7 @@ async function handleLogin() {
   font-weight: 500;
 }
 
-/* ── Error Alert ── */
+/* Error Alert */
 .lp-alert-error {
   background: rgba(224, 122, 95, 0.1);
   border: 1px solid rgba(224, 122, 95, 0.35);
@@ -415,7 +414,7 @@ async function handleLogin() {
   font-size: 0.85rem;
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 576px) {
   .lp-card {
     padding: 1.8rem 1.4rem;

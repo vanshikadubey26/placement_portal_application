@@ -1,6 +1,6 @@
 <template>
   <div class="admin-layout">
-    <!-- ── Sidebar ─────────────────────────── -->
+    <!--Sidebar-->
     <Sidebar
       v-model="activeNav"
       :nav-items="navItems"
@@ -10,7 +10,7 @@
       @logout="handleLogout"
     />
 
-    <!-- ── Main Content ────────────────────── -->
+    <!-- Main Content-->
     <main class="main-content">
       <!-- Top Bar -->
       <AdminTopbar
@@ -292,7 +292,7 @@ async function handleLogout() {
   box-sizing: border-box;
 }
 
-/* ─── Layout ──────────────────────────────── */
+/*Layout*/
 .admin-layout {
   display: flex;
   height: 100vh;
@@ -300,7 +300,7 @@ async function handleLogout() {
   overflow: hidden;
 }
 
-/* ─── Main Content ────────────────────────── */
+/*Main Content*/
 .main-content {
   flex: 1;
   overflow-y: auto;
@@ -310,7 +310,7 @@ async function handleLogout() {
   gap: 22px;
 }
 
-/* ─── Stat Cards (Grid of 2) ──────────────── */
+/*Stat Cards*/
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -375,7 +375,7 @@ async function handleLogout() {
   letter-spacing: -0.5px;
 }
 
-/* ─── Card Section ────────────────────────── */
+/*Card Section*/
 .card {
   background: #fff;
   border-radius: 14px;
@@ -408,7 +408,7 @@ async function handleLogout() {
   margin-top: 4px;
 }
 
-/* ─── Table ───────────────────────────────── */
+/* Table */
 .table-wrapper {
   overflow-x: auto;
   border-radius: 10px;
@@ -562,7 +562,7 @@ async function handleLogout() {
   color: #c5221f;
 }
 
-/* ─── Toggle Switch Styling ───────────────── */
+/*Toggle Switch Styling*/
 .switch {
   position: relative;
   display: inline-block;
@@ -620,7 +620,7 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-/* ─── Empty state ─────────────────────────── */
+/*Empty state*/
 .empty-state {
   text-align: center;
   padding: 48px 0 !important;
@@ -639,7 +639,7 @@ input:checked + .slider:before {
   margin-top: 6px;
 }
 
-/* ─── Student Profile Modal ───────────────── */
+/*Student Profile Modal*/
 .modal-overlay {
   position: fixed;
   inset: 0;

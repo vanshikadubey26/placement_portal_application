@@ -111,7 +111,7 @@
         </div>
       </section>
 
-      <!-- Drive Detail Modal -->
+      <!-- Drive Detail -->
       <Teleport to="body">
         <div class="modal-overlay" v-if="showDriveModal" @click.self="showDriveModal = false">
           <div class="modal">
@@ -136,7 +136,7 @@
         </div>
       </Teleport>
 
-      <!-- Student Profile Modal -->
+      <!-- Student Profile -->
       <Teleport to="body">
         <div class="modal-overlay" v-if="showStudentModal" @click.self="showStudentModal = false">
           <div class="modal">
@@ -180,7 +180,7 @@ const showStudentModal = ref(false)
 const activeDrive   = ref(null)
 const activeStudent = ref(null)
 
-// ── Sidebar nav ───────────────────────────────
+// Sidebar nav 
 const navItems = [
   { label: 'Dashboard',        icon: '' },
   { label: 'Students',         icon: '' },
@@ -197,7 +197,7 @@ watch(activeNav, (val) => {
   else if (val === 'Applications')     router.push('/admin/applications')
 })
 
-// ── Fetch ─────────────────────────────────────
+// Fetch 
 onMounted(async () => {
   const token = localStorage.getItem('access_token')
   const res = await fetch('http://localhost:5555/admin/all-applications', {
@@ -206,7 +206,7 @@ onMounted(async () => {
   if (res.ok) applications.value = await res.json()
 })
 
-// ── Computed ──────────────────────────────────
+// Computed
 const filteredApplications = computed(() => {
   if (!searchQuery.value) return applications.value
   const q = searchQuery.value.toLowerCase()
@@ -222,7 +222,7 @@ const interviewCount  = computed(() => applications.value.filter(a => a.status =
 const shortlistedCount = computed(() => applications.value.filter(a => a.status === 'shortlisted').length)
 const placedCount     = computed(() => applications.value.filter(a => a.status === 'selected').length)
 
-// ── Helpers ───────────────────────────────────
+// Helpers 
 function statusLabel(status) {
   const map = {
     applied:              'Applied',
@@ -282,7 +282,7 @@ async function handleLogout() {
 
 * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
 
-/* ─── Layout ─────────────────── */
+/* layout */
 .admin-layout { display: flex; height: 100vh; background: #f5f5f0; overflow: hidden; }
 
 .main-content {
@@ -294,7 +294,7 @@ async function handleLogout() {
   gap: 22px;
 }
 
-/* ─── Stat Cards ─────────────── */
+/* Stat Cards */
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -329,7 +329,7 @@ async function handleLogout() {
 .stat-label { font-size: 12.5px; color: #8a9e9a; font-weight: 500; margin-bottom: 4px; }
 .stat-value { font-size: 28px; font-weight: 700; color: #1a2e28; letter-spacing: -.5px; }
 
-/* ─── Card / Table ───────────── */
+/* Card / Table */
 .card { background: #fff; border-radius: 14px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .table-card { display: flex; flex-direction: column; }
 

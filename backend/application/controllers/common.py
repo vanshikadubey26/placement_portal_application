@@ -4,6 +4,7 @@ from application.models import User, Company, Drive, Application, Student
 
 common_bp = Blueprint('common', __name__)
 
+#API for student profile
 @common_bp.route('/common/student/profile/<int:id>', methods=['GET'])
 @jwt_required()
 def get_student_profile(id):
@@ -11,17 +12,15 @@ def get_student_profile(id):
     role = claims.get('role')
     identity = get_jwt_identity()
 
-    # Look up user in user table, only matching type='student'
+    #Look for user in user table, only matching type student
     user = User.query.filter_by(id=id, type='student').first()
     if not user:
         return jsonify({"message": "Student profile not found."}), 404
 
     student = user.student
-
-    # Security check:
-    # - Student can access only their own profile.
-    # - Admin can access all profiles.
-    # - Company/recruiter can access all profiles.
+    #Student can access only their own profile.
+    #Admin can access all profiles.
+    #Company/recruiter can access all profiles.
     if role == 'student':
         if str(user.id) != str(identity):
             return jsonify({"message": "Access forbidden: You can only view your own profile."}), 403
@@ -45,7 +44,7 @@ def get_student_profile(id):
     
     return jsonify(profile_data), 200
 
-
+#API for company profile
 @common_bp.route('/common/company/profile/<int:id>', methods=['GET'])
 @jwt_required()
 def get_company_profile(id):
@@ -79,7 +78,7 @@ def get_company_profile(id):
     
     return jsonify(profile_data), 200
 
-
+#API for drive profile
 @common_bp.route('/common/drive/profile/<int:id>', methods=['GET'])
 @jwt_required()
 def get_drive_profile(id):

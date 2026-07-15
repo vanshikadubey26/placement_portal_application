@@ -25,7 +25,7 @@
       <!-- Profile Container -->
       <div class="profile-container">
         
-        <!-- ─── PROFILE HEADER CARD ─── -->
+        <!-- PROFILE HEADER CARD -->
         <div class="header-card">
           <div class="header-left">
             <div class="avatar-wrapper">
@@ -60,10 +60,9 @@
           </div>
         </div>
 
-        <!-- ─── MAIN CONTENT BODY (2 COLUMNS) ─── -->
+        <!--MAIN CONTENT BODY-->
         <div class="profile-body-grid">
           
-          <!-- LEFT COLUMN: Corporate Information & POC Details -->
           <div class="body-col-left">
             
             <!-- Company Information Card -->
@@ -100,7 +99,7 @@
               </div>
             </div>
 
-            <!-- Point of Contact (POC) Card -->
+            <!-- Point of Contact Card -->
             <div class="content-card info-card">
               <div class="card-header">
                 <i class="bi bi-person-badge-fill card-header-icon"></i>
@@ -136,7 +135,7 @@
 
           </div>
 
-          <!-- RIGHT COLUMN: About/Description -->
+          <!-- About/Description -->
           <div class="body-col-right">
             
             <!-- About Company Card -->
@@ -179,7 +178,7 @@ const triggerToast = (msg) => {
   }, 3500)
 }
 
-// Company Profile Reactive State
+// Company profile reactive state
 const profile = reactive({
   name: 'NexusTech Solutions',
   username: 'nexustech_corp',
@@ -195,7 +194,7 @@ const profile = reactive({
   pocEmail: 'sjenkins@nexustech.io'
 })
 
-// Route and User Access computed controls
+// Route and user access computed controls
 const route = useRoute()
 const router = useRouter()
 const currentUser = ref(null)
@@ -367,7 +366,7 @@ const viewDoc = (docName) => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* Layout same as AdminDashView */
+
 .admin-layout {
   display: flex;
   height: 100vh;
@@ -392,7 +391,7 @@ const viewDoc = (docName) => {
   gap: 24px;
 }
 
-/* Custom Success Toast Styling */
+/* Custom success toast styling */
 .toast-alert {
   position: fixed;
   bottom: 24px;
@@ -430,9 +429,7 @@ const viewDoc = (docName) => {
   font-weight: 500;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── HEADER CARD STYLING ───
-──────────────────────────────────────────────────────── */
+
 .header-card {
   background: #ffffff;
   border-radius: 16px;
@@ -558,9 +555,7 @@ const viewDoc = (docName) => {
   transform: translateY(0);
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── MAIN SECTION BODY STYLING ───
-──────────────────────────────────────────────────────── */
+
 .profile-body-grid {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
@@ -600,9 +595,6 @@ const viewDoc = (docName) => {
   margin: 0;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── PERSONAL INFORMATION CARD ───
-──────────────────────────────────────────────────────── */
 .info-rows-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -668,9 +660,7 @@ const viewDoc = (docName) => {
   color: #495057;
 }
 
-/* ────────────────────────────────────────────────────────
-   ─── RESPONSIVE RULES ───
-──────────────────────────────────────────────────────── */
+
 @media (max-width: 992px) {
   .profile-body-grid {
     grid-template-columns: 1fr;

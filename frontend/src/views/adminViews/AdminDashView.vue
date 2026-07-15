@@ -43,7 +43,7 @@ import StatCardsGrid      from '@/components/admin/StatCardsGrid.vue'
 
 const router = useRouter()
 
-// ── State ───────────────────────────────────
+// State
 const activeNav     = ref('Dashboard')
 
 watch(activeNav, (newVal) => {
@@ -71,7 +71,7 @@ const navItems = [
   { label: 'Applications',     icon: '' },
 ]
 
-//  Data 
+// Data 
 const stats = ref([
   {
     label: 'Total Students',
@@ -129,28 +129,6 @@ onMounted(async () => {
   }
 })
 
-
-const pendingApprovals = [
-  {
-    name: 'NexusTech Solutions',
-    meta: 'Industry: Cloud Infrastructure • Applied 2h ago',
-    icon: '🏢',
-    primaryBtn: 'View Details',
-  },
-  {
-    name: 'Senior Frontend Architect',
-    meta: 'By GlobalLink Systems • 12 Vacancies • Drive Date: Oct 12',
-    icon: '🚀',
-    primaryBtn: 'Review',
-  },
-  {
-    name: 'Precision Manufacturing Ltd.',
-    meta: 'Industry: Industrial Automation • Applied 1d ago',
-    icon: '🏭',
-    primaryBtn: 'Reject',
-  },
-]
-
 const chartData = [
   { label: 'W1',  height: 60,  value: 45,  color: '#c8d3d2' },
   { label: 'W2',  height: 100, value: 80,  color: '#4a6e6b' },
@@ -170,7 +148,7 @@ const deadlines = [
   { month: 'OCT', day: '12', title: 'GlobalLink On-Campus Drive',   sub: 'Technical Round 1' },
 ]
 
-// ── Handlers ────────────────────────────────
+// Handlers
 function handlePrimary(item)       { alert(`Action: ${item.primaryBtn} → ${item.name}`) }
 function handleApprove(item)       { alert(`Approved: ${item.name}`) }
 function handleViewAll()           { alert('Navigate to all pending requests') }

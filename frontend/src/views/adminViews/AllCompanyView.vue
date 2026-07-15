@@ -1,6 +1,6 @@
 <template>
   <div class="admin-layout">
-    <!-- ── Sidebar ─────────────────────────── -->
+    <!--Sidebar -->
     <Sidebar
       v-model="activeNav"
       :nav-items="navItems"
@@ -10,7 +10,7 @@
       @logout="handleLogout"
     />
 
-    <!-- ── Main Content ────────────────────── -->
+    <!--Main Content -->
     <main class="main-content">
       <!-- Top Bar -->
       <AdminTopbar
@@ -18,7 +18,7 @@
         v-model="searchQuery"
       />
 
-      <!-- Stats Cards (4 Cards) -->
+      <!--Stats Cards -->
       <section class="stat-cards">
         <div class="stat-card">
           <div class="stat-top">
@@ -53,7 +53,7 @@
         </div>
       </section>
 
-      <!-- Table 1: Unapproved Companies -->
+      <!-- Table1-Unapproved Companies -->
       <section class="card table-card">
         <div class="table-header">
           <div class="table-title-group">
@@ -101,7 +101,7 @@
         </div>
       </section>
 
-      <!-- Table 2: All Companies (Approved / Registered) -->
+      <!-- Table2- All Companies -->
       <section class="card table-card">
         <div class="table-header">
           <div class="table-title-group">
@@ -165,7 +165,7 @@
         </div>
       </section>
 
-      <!-- Company Profile Modal -->
+      <!-- Company Profile -->
       <Teleport to="body">
         <div class="modal-overlay" v-if="showProfileModal" @click.self="showProfileModal = false">
           <div class="modal">
@@ -220,7 +220,7 @@ const selectedCompany = ref(null)
 
 const companies = ref([])
 
-// ── Sidebar nav ──────────────────────────────
+//Sidebar nav 
 const navItems = [
   { label: 'Dashboard',        icon: '' },
   { label: 'Students',         icon: '' },
@@ -237,7 +237,7 @@ watch(activeNav, (newVal) => {
   else if (newVal === 'Applications')     router.push('/admin/applications')
 })
 
-// ── Fetch from API ───────────────────────────
+//Fetch from API
 let searchTimeout = null
 
 watch(searchQuery, (newQuery) => {
@@ -267,7 +267,7 @@ onMounted(() => {
   fetchCompanies()
 })
 
-// ── Computed ─────────────────────────────────
+//Computed
 const filteredCompanies = computed(() => {
   return companies.value
 })
@@ -284,7 +284,7 @@ const approvedCount   = computed(() => companies.value.filter(c =>  c.approved).
 const unapprovedCount = computed(() => companies.value.filter(c => !c.approved).length)
 const blacklistedCount = computed(() => companies.value.filter(c => c.isBlacklisted).length)
 
-// ── Methods ──────────────────────────────────
+//Methods
 async function approveCompany(company) {
   try {
     const token = localStorage.getItem('access_token')
@@ -348,7 +348,7 @@ async function handleLogout() {
   box-sizing: border-box;
 }
 
-/* ─── Loading / Error ─────────────────────── */
+/*Loading / Error */
 .loading-state {
   display: flex;
   align-items: center;
@@ -386,7 +386,7 @@ async function handleLogout() {
   font-weight: 500;
 }
 
-/* ─── Layout ──────────────────────────────── */
+/*Layout*/
 .admin-layout {
   display: flex;
   height: 100vh;
@@ -394,7 +394,7 @@ async function handleLogout() {
   overflow: hidden;
 }
 
-/* ─── Main Content ────────────────────────── */
+/*Main Content*/
 .main-content {
   flex: 1;
   overflow-y: auto;
@@ -404,7 +404,7 @@ async function handleLogout() {
   gap: 22px;
 }
 
-/* ─── Stat Cards (Grid of 4) ──────────────── */
+/*Stat Cards*/
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -470,7 +470,7 @@ async function handleLogout() {
   letter-spacing: -0.5px;
 }
 
-/* ─── Card Section ────────────────────────── */
+/*Card Section*/
 .card {
   background: #fff;
   border-radius: 14px;
@@ -502,7 +502,7 @@ async function handleLogout() {
   margin-top: 4px;
 }
 
-/* ─── Table ───────────────────────────────── */
+/*Table*/
 .table-wrapper {
   overflow-x: auto;
   border-radius: 10px;
@@ -659,7 +659,7 @@ async function handleLogout() {
   color: #c5221f;
 }
 
-/* ─── Toggle Switch Styling ───────────────── */
+/*Toggle Switch Styling*/
 .switch {
   position: relative;
   display: inline-block;
@@ -716,7 +716,7 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-/* ─── Empty state ─────────────────────────── */
+/*Empty state*/
 .empty-state {
   text-align: center;
   padding: 40px 0 !important;
@@ -735,7 +735,7 @@ input:checked + .slider:before {
   margin-top: 6px;
 }
 
-/* ─── Company Profile Modal ───────────────── */
+/*Company Profile Modal*/
 .modal-overlay {
   position: fixed;
   inset: 0;

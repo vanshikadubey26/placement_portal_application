@@ -94,4 +94,3 @@ class Interview(db.Model):
    created_at = db.Column(db.DateTime, default=ist_now)
 
 
-#

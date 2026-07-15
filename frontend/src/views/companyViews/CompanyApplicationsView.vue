@@ -81,37 +81,35 @@
       </section>
 
       <!-- Reject Comment Modal -->
-      <Teleport to="body">
-        <div class="modal-overlay" v-if="showRejectModal" @click.self="closeRejectModal">
-          <div class="modal">
-            <div class="modal-header">
-              <span class="modal-icon"><i class="bi bi-exclamation-triangle"></i></span>
-              <div>
-                <h3 class="modal-title">Reject Application</h3>
-                <span class="modal-subtitle">Provide a reason or comment for candidate rejection</span>
+      <div class="modal-overlay" v-if="showRejectModal" @click.self="closeRejectModal">
+        <div class="company-reject-modal">
+          <div class="modal-header">
+            <span class="modal-icon"><i class="bi bi-exclamation-triangle"></i></span>
+            <div>
+              <h3 class="modal-title">Reject Application</h3>
+              <span class="modal-subtitle">Provide a reason or comment for candidate rejection</span>
+            </div>
+          </div>
+          <form @submit.prevent="confirmRejection">
+            <div class="modal-body" v-if="selectedApp">
+              <div class="candidate-context mb-3">
+                <strong>Candidate:</strong> {{ selectedApp.studentName }} ({{ selectedApp.rollNumber }}) <br />
+                <strong>Drive:</strong> {{ selectedApp.driveTitle }}
+              </div>
+              <div class="form-group">
+                <label class="form-label">Rejection Comment / Feedback *</label>
+                <textarea class="form-control text-area" v-model="rejectComment" rows="4" placeholder="Enter reason (e.g. Required skills mismatch, did not meet threshold criteria)..." required></textarea>
               </div>
             </div>
-            <form @submit.prevent="confirmRejection">
-              <div class="modal-body" v-if="selectedApp">
-                <div class="candidate-context mb-3">
-                  <strong>Candidate:</strong> {{ selectedApp.studentName }} ({{ selectedApp.rollNumber }}) <br />
-                  <strong>Drive:</strong> {{ selectedApp.driveTitle }}
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Rejection Comment / Feedback *</label>
-                  <textarea class="form-control text-area" v-model="rejectComment" rows="4" placeholder="Enter reason (e.g. Required skills mismatch, did not meet threshold criteria)..." required></textarea>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn-secondary me-2" @click="closeRejectModal">Cancel</button>
-                <button type="submit" class="btn-unapprove-confirm" :disabled="submittingRejection">
-                  Confirm Rejection
-                </button>
-              </div>
-            </form>
-          </div>
+            <div class="modal-footer">
+              <button type="button" class="btn-secondary me-2" @click="closeRejectModal">Cancel</button>
+              <button type="submit" class="btn-unapprove-confirm" :disabled="submittingRejection">
+                Confirm Rejection
+              </button>
+            </div>
+          </form>
         </div>
-      </Teleport>
+      </div>
 
     </main>
   </div>
@@ -128,11 +126,11 @@ const activeNav = ref('Applications')
 // Sidebar Nav Items
 const navItems = [
   { label: 'Dashboard',    icon: '<i class="bi bi-speedometer2"></i>' },
-  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' },
   { label: 'Drives',       icon: '<i class="bi bi-megaphone"></i>' },
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
-  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' }
+  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
 // Navigation Watch
@@ -140,7 +138,13 @@ watch(activeNav, (newVal) => {
   if (newVal === 'Dashboard') {
     router.push('/company/dashboard')
   } else if (newVal === 'Profile') {
-    router.push('/company/profile')
+    const userJson = localStorage.getItem('user')
+    if (userJson) {
+      const u = JSON.parse(userJson)
+      router.push(`/company/profile/${u.id}`)
+    } else {
+      router.push('/company/dashboard')
+    }
   } else if (newVal === 'Drives') {
     router.push('/company/drives')
   } else if (newVal === 'Applications') {
@@ -583,7 +587,7 @@ async function handleLogout() {
   z-index: 999;
 }
 
-.modal {
+.company-reject-modal {
   background: #fff;
   border-radius: 14px;
   padding: 24px 28px;

@@ -79,6 +79,10 @@ defineEmits(['update:modelValue', 'logout'])
 .sidebar {
   width: 210px;
   min-width: 210px;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   background: #253a35;
   display: flex;
   flex-direction: column;

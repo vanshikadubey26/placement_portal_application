@@ -45,10 +45,10 @@
         </div>
         <div class="metric-card">
           <div class="metric-top">
-            <div class="metric-icon selection-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="metric-icon interviews-icon"><i class="bi bi-calendar-check"></i></div>
           </div>
-          <div class="metric-label">Selection Rate</div>
-          <div class="metric-value">{{ selectionRate }}%</div>
+          <div class="metric-label">Interviews Scheduled</div>
+          <div class="metric-value">{{ interviewsCount }}</div>
         </div>
       </section>
 
@@ -66,14 +66,13 @@ import Sidebar from '@/components/Sidebar.vue'
 const router = useRouter()
 const activeNav = ref('Dashboard')
 
-// Sidebar Nav Items
 const navItems = [
   { label: 'Dashboard',    icon: '<i class="bi bi-speedometer2"></i>' },
-  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' },
   { label: 'Drives',       icon: '<i class="bi bi-megaphone"></i>' },
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
-  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' }
+  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
 // Navigation Watch
@@ -81,7 +80,13 @@ watch(activeNav, (newVal) => {
   if (newVal === 'Dashboard') {
     router.push('/company/dashboard')
   } else if (newVal === 'Profile') {
-    router.push('/company/profile')
+    const userJson = localStorage.getItem('user')
+    if (userJson) {
+      const u = JSON.parse(userJson)
+      router.push(`/company/profile/${u.id}`)
+    } else {
+      router.push('/company/dashboard')
+    }
   } else if (newVal === 'Drives') {
     router.push('/company/drives')
   } else if (newVal === 'Applications') {
@@ -104,64 +109,20 @@ const companyProfile = ref({
   pocEmail: 'hr@nexustech.io'
 })
 
-// Mock Drives Count
-const drivesCount = ref(2)
-
-// Mock Applications Data
-const applications = ref([
-  {
-    id: 101,
-    studentName: 'Amit Sharma',
-    rollNumber: 'CS22B104',
-    branch: 'CSE',
-    driveTitle: 'Graduate Engineer Trainee',
-    cgpa: 8.42,
-    status: 'Applied'
-  },
-  {
-    id: 102,
-    studentName: 'Priyansh Patel',
-    rollNumber: 'IT22B205',
-    branch: 'IT',
-    driveTitle: 'Graduate Engineer Trainee',
-    cgpa: 9.15,
-    status: 'Shortlisted'
-  },
-  {
-    id: 103,
-    studentName: 'Sneha Rao',
-    rollNumber: 'CS22B118',
-    branch: 'CSE',
-    driveTitle: 'Cloud DevOps Intern',
-    cgpa: 7.85,
-    status: 'Applied'
-  }
-])
-
-// Mock Interviews Data
-const interviews = ref([
-  {
-    id: 201,
-    studentName: 'Priyansh Patel',
-    driveTitle: 'Graduate Engineer Trainee',
-    scheduled_at: '2026-07-20T10:30:00',
-    mode: 'Remote',
-    meeting_link: 'https://meet.google.com/abc-defg-hij'
-  }
-])
+const drivesCount = ref(0)
+const applications = ref([])
+const interviews = ref([])
 
 // Computeds
-const shortlistedCount = computed(() => {
-  return applications.value.filter(app => app.status === 'Shortlisted').length
-})
+const shortlistedCount = computed(() =>
+  applications.value.filter(app => app.status?.toLowerCase() === 'shortlisted').length
+)
 
-const selectionRate = computed(() => {
-  if (applications.value.length === 0) return 0
-  return Math.round((shortlistedCount.value / applications.value.length) * 100)
-})
+const interviewsCount = computed(() => interviews.value.length)
 
-// Load user data on mount
-onMounted(() => {
+// Load real data from API on mount
+onMounted(async () => {
+  const token = localStorage.getItem('access_token')
   const userJson = localStorage.getItem('user')
   if (userJson) {
     try {
@@ -172,6 +133,21 @@ onMounted(() => {
     } catch (e) {
       console.error(e)
     }
+  }
+
+  if (!token) return
+
+  try {
+    const [drivesRes, appsRes, ivRes] = await Promise.all([
+      fetch('http://localhost:5555/api/company/drives', { headers: { Authorization: `Bearer ${token}` } }),
+      fetch('http://localhost:5555/api/company/applications', { headers: { Authorization: `Bearer ${token}` } }),
+      fetch('http://localhost:5555/api/company/interviews', { headers: { Authorization: `Bearer ${token}` } })
+    ])
+    if (drivesRes.ok) { const d = await drivesRes.json(); drivesCount.value = d.length }
+    if (appsRes.ok) applications.value = await appsRes.json()
+    if (ivRes.ok) interviews.value = await ivRes.json()
+  } catch (e) {
+    console.error('Dashboard fetch error:', e)
   }
 })
 
@@ -327,7 +303,7 @@ async function handleLogout() {
 .drives-icon { background: #e8f4f1; color: #2d6b5e; }
 .applicants-icon { background: #e0f0ec; color: #2d6b5e; }
 .shortlisted-icon { background: #e0f2fe; color: #0369a1; }
-.selection-icon { background: #fef3c7; color: #92400e; }
+.interviews-icon { background: #f3e8ff; color: #6b21a8; }
 
 .metric-label {
   font-size: 12.5px;

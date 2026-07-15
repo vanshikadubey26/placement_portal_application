@@ -1,5 +1,5 @@
 <template>
-  <div class="company-layout">
+  <div class="admin-layout">
     <!-- Sidebar -->
     <Sidebar
       v-model="activeNav"
@@ -28,9 +28,14 @@
 
       <!-- Profile Form -->
       <section class="card form-card">
-        <div class="card-header mb-4">
-          <h2 class="card-title">Company Profile Details</h2>
-          <p class="card-subtitle">Keep your company credentials and public interface up to date.</p>
+        <div class="card-header mb-4" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 class="card-title">Company Profile Details</h2>
+            <p class="card-subtitle">Keep your company credentials and public interface up to date.</p>
+          </div>
+          <button type="button" @click="goBack" class="btn-secondary" style="padding: 6px 12px; font-size: 12px; border: 1px solid #ced4da; border-radius: 6px; background: #fff; font-weight: 600; color: #495057; cursor: pointer;">
+            <i class="bi bi-arrow-left"></i> Back to Profile
+          </button>
         </div>
 
         <form @submit.prevent="saveProfile">
@@ -128,19 +133,28 @@ const activeNav = ref('Profile')
 // Sidebar Nav Items
 const navItems = [
   { label: 'Dashboard',    icon: '<i class="bi bi-speedometer2"></i>' },
-  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' },
   { label: 'Drives',       icon: '<i class="bi bi-megaphone"></i>' },
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
-  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' }
+  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
+
+let isInitialized = false
 
 // Navigation Watch
 watch(activeNav, (newVal) => {
+  if (!isInitialized) return
   if (newVal === 'Dashboard') {
     router.push('/company/dashboard')
   } else if (newVal === 'Profile') {
-    router.push('/company/profile')
+    const userJson = localStorage.getItem('user')
+    if (userJson) {
+      const u = JSON.parse(userJson)
+      router.push(`/company/profile/${u.id}`)
+    } else {
+      router.push('/company/dashboard')
+    }
   } else if (newVal === 'Drives') {
     router.push('/company/drives')
   } else if (newVal === 'Applications') {
@@ -187,6 +201,11 @@ onMounted(async () => {
     setTimeout(() => router.push('/login'), 1500)
     return
   }
+
+  // Set isInitialized on next tick to avoid redirection loop during setup
+  setTimeout(() => {
+    isInitialized = true
+  }, 150)
 
   try {
     const res = await fetch('http://localhost:5555/api/company/profile', {
@@ -329,10 +348,30 @@ async function saveProfile() {
     }
 
     showToast('Company profile updated successfully!')
+    
+    setTimeout(() => {
+      const userJson = localStorage.getItem('user')
+      if (userJson) {
+        const u = JSON.parse(userJson)
+        router.push(`/company/profile/${u.id}`)
+      } else {
+        router.push('/company/dashboard')
+      }
+    }, 1000)
   } catch (err) {
     showToast('Cannot connect to server to save changes.', 'error')
   } finally {
     savingProfile.value = false
+  }
+}
+
+function goBack() {
+  const userJson = localStorage.getItem('user')
+  if (userJson) {
+    const u = JSON.parse(userJson)
+    router.push(`/company/profile/${u.id}`)
+  } else {
+    router.push('/company/dashboard')
   }
 }
 
@@ -361,7 +400,7 @@ async function handleLogout() {
   box-sizing: border-box;
 }
 
-.company-layout {
+.admin-layout {
   display: flex;
   height: 100vh;
   background: #f5f5f0;

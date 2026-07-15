@@ -453,6 +453,7 @@ def get_company_interviews():
         result.append({
             "id": iv.id,
             "application_id": iv.application_id,
+            "application_status": app.status,
             "studentName": user.name if user else "Unknown Student",
             "rollNumber": student.roll_number if student else "N/A",
             "branch": student.branch if student else "N/A",
@@ -465,3 +466,47 @@ def get_company_interviews():
         })
 
     return jsonify(result), 200
+
+
+@company_bp.route('/api/company/application/<int:app_id>/offer-letter', methods=['POST'])
+@jwt_required()
+def send_offer_letter(app_id):
+    """Mark an application as having received an offer letter."""
+    claims = get_jwt()
+    if claims.get('role') != 'recruiter':
+        return jsonify({"message": "Access forbidden: Recruiters only."}), 403
+
+    identity = get_jwt_identity()
+    if not identity or not identity.startswith("company_"):
+        return jsonify({"message": "Invalid token identity."}), 400
+
+    try:
+        company_id = int(identity.split("_")[1])
+    except (ValueError, IndexError):
+        return jsonify({"message": "Invalid token identity structure."}), 400
+
+    company = Company.query.get(company_id)
+    if not company:
+        return jsonify({"message": "Company not found."}), 404
+
+    application = Application.query.get(app_id)
+    if not application:
+        return jsonify({"message": "Application not found."}), 404
+
+    # Ensure the application belongs to this company's drive
+    if application.drive.company_id != company.id:
+        return jsonify({"message": "Access forbidden: Not your drive's application."}), 403
+
+    application.status = 'Job Offered'
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to send offer letter.", "error": str(e)}), 500
+
+    return jsonify({
+        "message": f"Offer letter sent successfully to application #{app_id}.",
+        "application_id": application.id,
+        "status": application.status
+    }), 200

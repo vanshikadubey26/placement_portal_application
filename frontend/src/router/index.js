@@ -14,8 +14,11 @@ import CompanyApplicationsView from '@/views/companyViews/CompanyApplicationsVie
 import CompanyInterviewsView from '@/views/companyViews/CompanyInterviewsView.vue'
 import CreateDriveForm from '@/views/companyViews/CreateDriveForm.vue'
 import CompanyShortlistedView from '@/views/companyViews/CompanyShortlistedView.vue'
-import StudentDashView from '@/views/studentViews/StudentView.vue'
+import StudentDashView from '@/views/studentViews/StudentDashView.vue'
+import StudentDrivesView from '@/views/studentViews/StudentDrivesView.vue'
+import StudentApplicationsView from '@/views/studentViews/StudentApplicationsView.vue'
 import StudentProfileView from '@/views/commonViews/StudentProfileView.vue'
+import StudentProfileEditView from '@/views/studentViews/StudentProfileEditView.vue'
 import CompanyProfileView from '@/views/commonViews/CompanyProfileView.vue'
 import DriveProfileView from '@/views/commonViews/DriveProfileView.vue'
 
@@ -72,7 +75,7 @@ const router = createRouter({
       component: CompanyDashView,
     },
     {
-      path: '/company/profile',
+      path: '/company/profile/edit',
       name: 'company-profile-edit',
       component: CompanyProfileEditView,
     },
@@ -105,6 +108,21 @@ const router = createRouter({
       path: '/student/dashboard',
       name: 'student-dashboard',
       component: StudentDashView,
+    },
+    {
+      path: '/student/drives',
+      name: 'student-drives',
+      component: StudentDrivesView,
+    },
+    {
+      path: '/student/applications',
+      name: 'student-applications',
+      component: StudentApplicationsView,
+    },
+    {
+      path: '/student/profile/edit',
+      name: 'student-profile-edit',
+      component: StudentProfileEditView,
     },
     {
       path: '/student/profile/:userid',

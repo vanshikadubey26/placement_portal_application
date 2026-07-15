@@ -101,11 +101,11 @@ const activeNav = ref('Drives')
 // Sidebar Nav Items
 const navItems = [
   { label: 'Dashboard',    icon: '<i class="bi bi-speedometer2"></i>' },
-  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' },
   { label: 'Drives',       icon: '<i class="bi bi-megaphone"></i>' },
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
-  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' }
+  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
 // Navigation Watch
@@ -113,7 +113,13 @@ watch(activeNav, (newVal) => {
   if (newVal === 'Dashboard') {
     router.push('/company/dashboard')
   } else if (newVal === 'Profile') {
-    router.push('/company/profile')
+    const userJson = localStorage.getItem('user')
+    if (userJson) {
+      const u = JSON.parse(userJson)
+      router.push(`/company/profile/${u.id}`)
+    } else {
+      router.push('/company/dashboard')
+    }
   } else if (newVal === 'Drives') {
     router.push('/company/drives')
   } else if (newVal === 'Applications') {

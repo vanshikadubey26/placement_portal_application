@@ -54,6 +54,23 @@
 
           <!-- Action Buttons -->
           <div class="header-actions">
+            <!-- Student Apply Actions -->
+            <template v-if="currentUser?.role === 'student'">
+              <span v-if="drive.applied" class="badge-status-applied-large">
+                <i class="bi bi-check-circle-fill"></i> Applied
+              </span>
+              <span v-else-if="isExpired(drive.deadline)" class="badge-disabled-large">
+                Closed
+              </span>
+              <span v-else-if="drive.isBlacklisted" class="badge-disabled-large" title="Account locked by admin.">
+                Locked
+              </span>
+              <button v-else @click="applyToThisDrive" class="btn-apply-large" :disabled="applying">
+                <span v-if="applying">Applying...</span>
+                <span v-else><i class="bi bi-send-fill"></i> Apply Now</span>
+              </button>
+            </template>
+
             <button @click="goBack" class="btn-back" title="Go Back">
               <i class="bi bi-arrow-left"></i> Back
             </button>
@@ -211,7 +228,9 @@ const drive = reactive({
   branches: 'CSE, IT, ECE',
   skillsRequired: 'Python, Node.js, SQL, REST APIs',
   interviewRounds: 'Resume Shortlisting -> Online Test -> Technical Round -> HR Round',
-  description: 'We are looking for self-driven engineering interns to join our cloud virtualization development squad. You will assist in writing enterprise APIs, database indexing operations, and serverless architectures.'
+  description: 'We are looking for self-driven engineering interns to join our cloud virtualization development squad. You will assist in writing enterprise APIs, database indexing operations, and serverless architectures.',
+  applied: false,
+  isBlacklisted: false
 })
 
 // Route and User Access computed controls
@@ -340,6 +359,8 @@ onMounted(async () => {
         drive.skillsRequired = driveData.skillsRequired || 'N/A'
         drive.interviewRounds = driveData.interviewRounds || 'N/A'
         drive.description = driveData.description || 'No detailed job description provided.'
+        drive.applied = driveData.applied ?? false
+        drive.isBlacklisted = driveData.isBlacklisted ?? false
       } else {
         triggerToast('Failed to fetch drive details from server.')
       }
@@ -353,6 +374,33 @@ onMounted(async () => {
 // Back navigation helper
 const goBack = () => {
   router.back()
+}
+
+const applying = ref(false)
+
+const applyToThisDrive = async () => {
+  const token = localStorage.getItem('access_token')
+  if (!token) return
+  
+  applying.value = true
+  try {
+    const res = await fetch(`http://localhost:5555/api/student/apply/${route.params.driveid}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      triggerToast(data.message || 'Failed to apply.')
+      return
+    }
+    triggerToast('Successfully applied to placement drive!')
+    drive.applied = true
+  } catch (err) {
+    console.error(err)
+    triggerToast('Network error while applying.')
+  } finally {
+    applying.value = false
+  }
 }
 
 const isExpired = (deadlineStr) => {
@@ -736,5 +784,52 @@ const formatDate = (dateStr) => {
     grid-template-columns: 1fr;
     gap: 16px;
   }
+}
+
+/* Apply / Status Large Badges and Buttons */
+.btn-apply-large {
+  background: #2d6b5e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-apply-large:hover {
+  background: #235349;
+  transform: translateY(-1px);
+}
+.btn-apply-large:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.badge-status-applied-large {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2d6b5e;
+  background: #e8f4f1;
+  padding: 6px 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #c9e6df;
+}
+
+.badge-disabled-large {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 </style>

@@ -33,9 +33,6 @@
             <h2 class="table-title">Interview Schedules</h2>
             <p class="table-subtitle">Coordinate and run interviews for shortlisted candidates.</p>
           </div>
-          <button class="btn-primary" @click="showScheduleModal = true">
-            <i class="bi bi-plus-lg me-2"></i> Schedule Interview
-          </button>
         </div>
 
         <div class="table-wrapper">
@@ -47,6 +44,7 @@
                 <th>Time / Date</th>
                 <th>Mode</th>
                 <th>Location / Meeting Link</th>
+                <th class="text-center">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -54,7 +52,12 @@
                 <td>
                   <div class="candidate-cell">
                     <span class="avatar-small">{{ interview.studentName.charAt(0) }}</span>
-                    <span class="name-text">{{ interview.studentName }}</span>
+                    <div class="candidate-info">
+                      <span class="name-text">{{ interview.studentName }}</span>
+                      <span :class="['app-status-badge', getStatusClass(interview.application_status)]">
+                        {{ interview.application_status || 'Interview Scheduled' }}
+                      </span>
+                    </div>
                   </div>
                 </td>
                 <td>{{ interview.driveTitle }}</td>
@@ -68,8 +71,30 @@
                   </a>
                   <span v-else>{{ interview.location || '—' }}</span>
                 </td>
-              </tr>
-              <tr v-if="interviews.length === 0 && !loading">
+                <td class="text-center">
+                    <button
+                      v-if="interview.application_status === 'Job Offered'"
+                      class="btn-offer-sent"
+                      disabled
+                    >
+                      <i class="bi bi-envelope-check-fill"></i> Offer Sent
+                    </button>
+                    <button
+                      v-else
+                      class="btn-offer"
+                      :disabled="sendingOfferId === interview.application_id"
+                      @click="sendOfferLetter(interview)"
+                    >
+                      <span v-if="sendingOfferId === interview.application_id">
+                        <i class="bi bi-hourglass-split"></i> Sending...
+                      </span>
+                      <span v-else>
+                        <i class="bi bi-envelope-arrow-up"></i> Send Offer
+                      </span>
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="interviews.length === 0 && !loading">
                 <td colspan="5" class="empty-state">No interviews scheduled yet.</td>
               </tr>
               <tr v-if="loading">
@@ -152,11 +177,11 @@ const activeNav = ref('Interviews')
 // Sidebar Nav Items
 const navItems = [
   { label: 'Dashboard',    icon: '<i class="bi bi-speedometer2"></i>' },
-  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' },
   { label: 'Drives',       icon: '<i class="bi bi-megaphone"></i>' },
   { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
   { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
-  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' }
+  { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+  { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
 ]
 
 // Navigation Watch
@@ -164,7 +189,13 @@ watch(activeNav, (newVal) => {
   if (newVal === 'Dashboard') {
     router.push('/company/dashboard')
   } else if (newVal === 'Profile') {
-    router.push('/company/profile')
+    const userJson = localStorage.getItem('user')
+    if (userJson) {
+      const u = JSON.parse(userJson)
+      router.push(`/company/profile/${u.id}`)
+    } else {
+      router.push('/company/dashboard')
+    }
   } else if (newVal === 'Drives') {
     router.push('/company/drives')
   } else if (newVal === 'Applications') {
@@ -190,6 +221,7 @@ const companyProfile = ref({
 // Interviews fetched from API
 const interviews = ref([])
 const loading = ref(false)
+const sendingOfferId = ref(null)
 
 const showScheduleModal = ref(false)
 const toastMessage = ref('')
@@ -244,9 +276,45 @@ function formatDateTime(dateTimeStr) {
   })
 }
 
+function getStatusClass(status) {
+  if (!status) return 'status-interview'
+  const s = status.toLowerCase()
+  if (s === 'job offered') return 'status-offered'
+  if (s === 'shortlisted') return 'status-shortlisted'
+  if (s === 'rejected') return 'status-rejected'
+  if (s === 'interview scheduled') return 'status-interview'
+  return 'status-applied'
+}
+
 function scheduleInterview() {
   // Redirect to Shortlisted page where interview scheduling is done per-application
   router.push('/company/shortlisted')
+}
+
+async function sendOfferLetter(interview) {
+  const token = localStorage.getItem('access_token')
+  sendingOfferId.value = interview.application_id
+  try {
+    const res = await fetch(
+      `http://localhost:5555/api/company/application/${interview.application_id}/offer-letter`,
+      {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    )
+    const data = await res.json()
+    if (!res.ok) {
+      showToast(data.message || 'Failed to send offer letter.', 'error')
+      return
+    }
+    // Update application_status reactively so button switches to 'Offer Sent' permanently
+    interview.application_status = 'Job Offered'
+    showToast(`Offer letter sent to ${interview.studentName}!`)
+  } catch {
+    showToast('Network error while sending offer letter.', 'error')
+  } finally {
+    sendingOfferId.value = null
+  }
 }
 
 async function handleLogout() {
@@ -626,4 +694,56 @@ async function handleLogout() {
 .me-2 { margin-right: 8px; }
 .mb-3 { margin-bottom: 12px; }
 .text-xs { font-size: 11px; }
+.text-center { text-align: center; }
+
+/* ── Offer Letter Button ───────── */
+.btn-offer {
+  background: linear-gradient(135deg, #1e4d8c, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-offer:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+.btn-offer:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-offer-sent {
+  background: #e6f4ea;
+  color: #137333;
+  border: 1.5px solid #b7dfbf;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+/* Candidate info with status badge */
+.candidate-info { display: flex; flex-direction: column; gap: 3px; }
+
+.app-status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  display: inline-block;
+  width: fit-content;
+}
+.status-interview  { background: #d1fae5; color: #065f46; }
+.status-shortlisted { background: #e0f2fe; color: #0369a1; }
+.status-offered     { background: #fef3c7; color: #92400e; }
+.status-rejected    { background: #fee2e2; color: #991b1b; }
+.status-applied     { background: #f3f4f6; color: #374151; }
 </style>

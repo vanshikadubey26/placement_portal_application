@@ -51,6 +51,9 @@
 
           <!-- Action Buttons -->
           <div class="header-actions">
+            <button v-if="isOwnProfile" @click="router.push('/company/profile/edit')" class="btn-primary-custom" title="Edit Profile">
+              <i class="bi bi-pencil-square"></i> Edit Profile
+            </button>
             <button @click="goBack" class="btn-back" title="Go Back">
               <i class="bi bi-arrow-left"></i> Back
             </button>
@@ -212,20 +215,27 @@ const navItems = computed(() => {
   if (!currentUser.value) return []
   if (currentUser.value.role === 'admin') {
     return [
-      { label: 'Dashboard',        icon: '' },
-      { label: 'Students',         icon: '' },
-      { label: 'Companies',        icon: '' },
-      { label: 'Placement Drives', icon: '' },
-      { label: 'Applications',     icon: '' },
+      { label: 'Dashboard',        icon: '<i class="bi bi-speedometer2"></i>' },
+      { label: 'Students',         icon: '<i class="bi bi-people"></i>' },
+      { label: 'Companies',        icon: '<i class="bi bi-building"></i>' },
+      { label: 'Placement Drives', icon: '<i class="bi bi-megaphone"></i>' },
+      { label: 'Applications',     icon: '<i class="bi bi-file-earmark-text"></i>' },
     ]
   } else if (currentUser.value.role === 'recruiter') {
     return [
-      { label: 'Dashboard',        icon: '' }
+      { label: 'Dashboard',    icon: '<i class="bi bi-speedometer2"></i>' },
+      { label: 'Drives',       icon: '<i class="bi bi-megaphone"></i>' },
+      { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
+      { label: 'Shortlisted',  icon: '<i class="bi bi-patch-check"></i>' },
+      { label: 'Interviews',   icon: '<i class="bi bi-calendar-event"></i>' },
+      { label: 'Profile',      icon: '<i class="bi bi-building"></i>' }
     ]
   } else {
     return [
-      { label: 'Dashboard',        icon: '' },
-      { label: 'Profile',          icon: '' }
+      { label: 'Dashboard',    icon: '<i class="bi bi-speedometer2"></i>' },
+      { label: 'Drives',       icon: '<i class="bi bi-megaphone"></i>' },
+      { label: 'Applications', icon: '<i class="bi bi-file-earmark-text"></i>' },
+      { label: 'Profile',      icon: '<i class="bi bi-person-bounding-box"></i>' }
     ]
   }
 })
@@ -243,8 +253,15 @@ watch(activeNav, (newVal) => {
     else if (newVal === 'Applications') router.push('/admin/applications')
   } else if (currentUser.value.role === 'recruiter') {
     if (newVal === 'Dashboard') router.push('/company/dashboard')
+    else if (newVal === 'Drives') router.push('/company/drives')
+    else if (newVal === 'Applications') router.push('/company/applications')
+    else if (newVal === 'Shortlisted') router.push('/company/shortlisted')
+    else if (newVal === 'Interviews') router.push('/company/interviews')
+    else if (newVal === 'Profile') router.push(`/company/profile/${currentUser.value.id}`)
   } else {
     if (newVal === 'Dashboard') router.push('/student/dashboard')
+    else if (newVal === 'Drives') router.push('/student/drives')
+    else if (newVal === 'Applications') router.push('/student/applications')
     else if (newVal === 'Profile') router.push(`/student/profile/${currentUser.value.id}`)
   }
 })
@@ -335,6 +352,11 @@ onMounted(async () => {
 const goBack = () => {
   router.back()
 }
+
+const isOwnProfile = computed(() => {
+  if (!currentUser.value) return false
+  return currentUser.value.role === 'recruiter' && String(currentUser.value.id) === String(route.params.companyid)
+})
 
 // Simulated doc review click
 const viewDoc = (docName) => {
@@ -692,5 +714,28 @@ const viewDoc = (docName) => {
     grid-template-columns: 1fr;
     gap: 16px;
   }
+}
+
+/* Edit Profile Custom Styles */
+.btn-primary-custom {
+  background: #2d6b5e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, transform 0.15s;
+}
+.btn-primary-custom:hover {
+  background: #235349;
+  transform: translateY(-1px);
+}
+.btn-primary-custom:active {
+  transform: translateY(0);
 }
 </style>

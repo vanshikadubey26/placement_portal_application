@@ -94,6 +94,19 @@ def get_drive_profile(id):
         return jsonify({"message": "Drive profile not found."}), 404
 
     company = drive.company
+    
+    applied = False
+    is_blacklisted = False
+    if role == 'student':
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        if user:
+            is_blacklisted = user.isBlacklisted
+            if user.student:
+                app = Application.query.filter_by(student_id=user.student.id, drive_id=drive.id).first()
+                if app:
+                    applied = True
+
     profile_data = {
         "id": drive.id,
         "company_id": drive.company_id,
@@ -113,7 +126,9 @@ def get_drive_profile(id):
         "interviewRounds": drive.interviewRounds,
         "positions": drive.positions,
         "created_at": drive.created_at.isoformat() if drive.created_at else None,
-        "approved": drive.approved
+        "approved": drive.approved,
+        "applied": applied,
+        "isBlacklisted": is_blacklisted
     }
     
     return jsonify(profile_data), 200

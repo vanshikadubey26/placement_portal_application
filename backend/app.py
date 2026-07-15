@@ -77,12 +77,14 @@ from application.controllers.auth import auth_bp
 from application.controllers.admin import admin_bp
 from application.controllers.common import common_bp
 from application.controllers.company import company_bp
+from application.controllers.student import student_bp
 
 app.register_blueprint(system_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(common_bp)
 app.register_blueprint(company_bp)
+app.register_blueprint(student_bp)
 #Run App
 
 if __name__ == "__main__":
